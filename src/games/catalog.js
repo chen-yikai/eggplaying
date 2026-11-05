@@ -57,7 +57,7 @@ const BUILTIN = {
   truefalse: [
     tf('章魚有三顆心臟。', 'An octopus has three hearts.', true),
     tf('聲音在真空中傳得最快。', 'Sound travels fastest in a vacuum.', false),
-    tf('香蕉長在樹上是植物學上的漿果。', 'Botanically, a banana is a berry.', true),
+    tf('香蕉在植物學上屬於漿果。', 'Botanically, a banana is a berry.', true),
     tf('金星是離太陽最近的行星。', 'Venus is the closest planet to the Sun.', false),
     tf('人體最大的器官是皮膚。', 'Skin is the largest human organ.', true),
   ],
@@ -151,7 +151,7 @@ export async function loadWords(lang, count = 3) {
   return { items: shuffle(BUILTIN_WORDS).slice(0, count).map(([word, z, e]) => ({ word, hint: lang === 'zh' ? z : e })), source: 'builtin' };
 }
 
-const EMOJI_RE = /^\p{Extended_Pictographic}/u;
+const EMOJI_RE = /^[^\x00-\x7F]{1,8}$/;
 export async function loadPairs(count = 3) {
   if (hasGemini()) {
     try {

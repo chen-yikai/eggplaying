@@ -1,18 +1,24 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { AccessibilityInfo, Animated, Platform, Pressable, Text, TextInput, View } from 'react-native';
+import { AccessibilityInfo, Animated, Platform, Pressable, ScrollView, Text, TextInput, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { type, useColors } from '../theme/tokens';
 
 const NATIVE = Platform.OS !== 'web';
 
+// Read once at module load so a component's very first frame already respects the setting.
+let reducedNow = false;
+const reducedListeners = new Set();
+const setReducedNow = v => { reducedNow = !!v; reducedListeners.forEach(fn => fn(reducedNow)); };
+AccessibilityInfo.isReduceMotionEnabled?.().then(setReducedNow).catch(() => {});
+AccessibilityInfo.addEventListener?.('reduceMotionChanged', setReducedNow);
+
 export function useReducedMotion() {
-  const [reduced, setReduced] = useState(false);
+  const [reduced, setReduced] = useState(reducedNow);
   useEffect(() => {
-    let alive = true;
-    AccessibilityInfo.isReduceMotionEnabled?.().then(v => alive && setReduced(!!v)).catch(() => {});
-    const sub = AccessibilityInfo.addEventListener?.('reduceMotionChanged', setReduced);
-    return () => { alive = false; sub?.remove?.(); };
+    setReduced(reducedNow);
+    reducedListeners.add(setReduced);
+    return () => reducedListeners.delete(setReduced);
   }, []);
   return reduced;
 }
@@ -42,7 +48,7 @@ export function Tile({ onPress, selected, edge, depth = 5, radius = 18, style, f
     <Pressable
       accessibilityRole="button" accessibilityLabel={label}
       accessibilityState={{ selected: !!selected, disabled: !!disabled }}
-      disabled={disabled} onPress={onPress}
+      disabled={disabled} delayPressIn={0} onPress={onPress}
       onPressIn={() => spring(y, depth * 0.85, { response: 0.14, reduced })}
       onPressOut={() => spring(y, selected ? latch : 0, { response: 0.3, reduced })}
       style={[{ borderRadius: radius, backgroundColor: edge || c.edge, paddingBottom: depth }, style]}
@@ -64,7 +70,7 @@ export function Button({ title, onPress, kind = 'primary', icon, disabled, style
   const fg = primary ? c.onAccent : c.accent;
   return (
     <Pressable
-      accessibilityRole="button" accessibilityState={{ disabled: !!disabled }} disabled={disabled} onPress={onPress}
+      accessibilityRole="button" accessibilityState={{ disabled: !!disabled }} disabled={disabled} delayPressIn={0} onPress={onPress}
       onPressIn={() => spring(s, 0.97, { response: 0.14, reduced })}
       onPressOut={() => spring(s, 1, { response: 0.3, reduced })} style={style}
     >
@@ -173,33 +179,63 @@ export function Group({ children, style }) {
   return <View style={[{ backgroundColor: c.surface, borderRadius: 16, overflow: 'hidden' }, style]}>{children}</View>;
 }
 
-export function Row({ leading, title, subtitle, trailing, onPress, last, label }) {
+// `accessory` sits beside the row's button, never inside it, so it stays its own control.
+export function Row({ leading, title, subtitle, trailing, accessory, onPress, last, label }) {
   const c = useColors();
   return (
-    <Pressable accessibilityRole={onPress ? 'button' : undefined} accessibilityLabel={label} onPress={onPress} disabled={!onPress}
-      style={({ pressed }) => ({ flexDirection: 'row', alignItems: 'center', gap: 12, minHeight: 56, paddingHorizontal: 16, paddingVertical: 10,
-        backgroundColor: pressed ? c.surface2 : 'transparent', borderBottomWidth: last ? 0 : 1, borderBottomColor: c.separator })}>
-      {leading}
-      <View style={{ flex: 1 }}>
-        <T v="body">{title}</T>
-        {!!subtitle && <T v="footnote" color={c.secondary}>{subtitle}</T>}
-      </View>
-      {trailing}
-      {onPress && <Ionicons name="chevron-forward" size={18} color={c.placeholder} />}
-    </Pressable>
+    <View style={{ flexDirection: 'row', alignItems: 'center', paddingRight: accessory ? 4 : 0, borderBottomWidth: last ? 0 : 1, borderBottomColor: c.separator }}>
+      <Pressable accessibilityRole={onPress ? 'button' : undefined} accessibilityLabel={label} onPress={onPress} disabled={!onPress}
+        style={({ pressed }) => ({ flex: 1, flexDirection: 'row', alignItems: 'center', gap: 12, minHeight: 56, paddingLeft: 16, paddingRight: accessory ? 4 : 16, paddingVertical: 10, backgroundColor: pressed ? c.surface2 : 'transparent' })}>
+        {leading}
+        <View style={{ flex: 1 }}>
+          <T v="body">{title}</T>
+          {!!subtitle && <T v="footnote" color={c.secondary}>{subtitle}</T>}
+        </View>
+        {trailing}
+        {onPress && !accessory && <Ionicons name="chevron-forward" size={18} color={c.placeholder} />}
+      </Pressable>
+      {accessory}
+    </View>
   );
 }
 
-export function Field({ style, ...props }) {
+export const Field = React.forwardRef(function Field({ style, ...props }, ref) {
   const c = useColors();
-  return <TextInput placeholderTextColor={c.placeholder} style={[type.body, { color: c.label, minHeight: 48, paddingVertical: 10 }, style]} {...props} />;
-}
+  return <TextInput ref={ref} placeholderTextColor={c.placeholder} style={[type.body, { color: c.label, minHeight: 48, paddingVertical: 10 }, style]} {...props} />;
+});
 
 export function Section({ title, children, style }) {
   return (
     <View style={[{ marginTop: 26 }, style]}>
       <T v="title2" accessibilityRole="header" style={{ marginBottom: 12 }}>{title}</T>
       {children}
+    </View>
+  );
+}
+
+export function Page({ children, bottom = 32, scrollRef, ...rest }) {
+  return (
+    <ScrollView ref={scrollRef} keyboardShouldPersistTaps="handled" {...rest}
+      contentContainerStyle={{ paddingHorizontal: 20, paddingTop: 8, paddingBottom: bottom, width: '100%', maxWidth: 640, alignSelf: 'center' }}>
+      {children}
+    </ScrollView>
+  );
+}
+
+export function Chip({ text, tone = 'neutral' }) {
+  const c = useColors();
+  const [bg, fg] = tone === 'accent' ? [c.accentTint, c.accent] : [c.surface2, c.secondary];
+  return <View style={{ backgroundColor: bg, borderRadius: 8, paddingHorizontal: 8, paddingVertical: 3 }}><T v="caption" color={fg}>{text}</T></View>;
+}
+
+export function EmptyState({ emoji, title, body, children }) {
+  const c = useColors();
+  return (
+    <View style={{ alignItems: 'center', paddingVertical: 40, paddingHorizontal: 12 }}>
+      <Text style={{ fontSize: 52 }}>{emoji}</Text>
+      <T v="title2" style={{ marginTop: 14, textAlign: 'center' }}>{title}</T>
+      {!!body && <T v="subhead" color={c.secondary} style={{ marginTop: 6, textAlign: 'center' }}>{body}</T>}
+      {children && <View style={{ marginTop: 18, alignSelf: 'stretch' }}>{children}</View>}
     </View>
   );
 }

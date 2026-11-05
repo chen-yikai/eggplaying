@@ -45,26 +45,27 @@
 ## 目前狀態
 
 - 技術：Expo SDK 55、React Native 0.83、React 19.2、`@supabase/supabase-js`。
-- 分支：`main` 的 `a4df767` 是基準還原點，開發在 `redesign` 分支（`c9cce0e`）。
-- 畫面上跑的仍是舊 UI：`src/App.js` 和 `src/screens/`，只有 5 款益智遊戲可玩，其餘是「即將推出」。
+- 分支：`main` 的 `a4df767` 是基準還原點，開發在 `redesign` 分支。
+- 新 UI 已接上畫面：登入／註冊、首頁、幫我選、20 款遊戲、收藏、聊天室、我的。
+- 資料表已建立（`favorites`、`plays`、`chat_messages`）。
 
-已寫好、但尚未接上畫面、也沒實際執行過的檔案：
+已在 web（無頭 Chrome）實際測過：訪客流程、20 款遊戲開啟、部分遊戲玩到結果頁、收藏重新整理後保留、語言切換、深色模式、減少動態效果。
 
-| 檔案 | 內容 |
-| --- | --- |
-| `src/components/ui.js` | 新 UI 元件與彈簧動畫 |
-| `src/theme/tokens.js` | 顏色與字級 |
-| `src/state/store.js` | 登入狀態、收藏、遊玩紀錄、語言、挑選遊戲 |
-| `src/games/catalog.js` | 20 款遊戲目錄、內建題庫、Gemini 出題與驗證 |
-| `src/lib/gemini.js` | Gemini 呼叫 |
+**尚未測過：**
+
+- 實際登入、註冊、登出，以及登入後收藏與遊玩紀錄寫入資料庫（agent 不可在正式專案建立帳號）。
+- 聊天室發訊息與 Realtime 即時更新（需要登入）。
+- Gemini 實際出題（目前沒有 `EXPO_PUBLIC_GEMINI_API_KEY`，都走內建題庫）。
+- Android 模擬器。
 
 ## Supabase
 
 - 連線設定在 `src/lib/supabase.js`（publishable key）。
-- `favorites`、`plays`、`chat_messages` 的建表 SQL 在 `supabase/schema.sql`，由使用者貼到 SQL Editor 執行。開始前先確認是否已建立，檢查時回傳 200 代表已存在、404 代表還沒建。
+- `favorites`、`plays`、`chat_messages` 由 Drizzle 管理：schema 在 `src/db/schema.js`，migration 在 `supabase/migrations/`，由使用者在 `.env.local` 設定 `DATABASE_URL` 後執行 `npm run db:migrate`。開始前先確認是否已建立，檢查時回傳 200 代表已存在、404 代表還沒建。
+- App 執行時仍用 `supabase-js`，不可 import `src/db/`，否則資料庫密碼會被打包進 App。
 - `profiles` 表已存在，含 `id`、`nickname` 欄位，目前未使用；暱稱存在帳號的 user metadata。
 - 註冊要能立即登入，使用者需在後台關閉 **Confirm email**。上次檢查時仍是開啟（`mailer_autoconfirm: false`）。
-- 沒有 secret key，也沒有 Supabase CLI，所以無法從這裡建表或改設定。
+- 資料庫密碼在 `.env.local` 的 `DATABASE_URL`（Session pooler，port 5432），可用來跑 migration。沒有 secret key，也沒有 Supabase CLI，所以無法從這裡改後台設定。
 
 ## Gemini
 

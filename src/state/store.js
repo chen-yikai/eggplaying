@@ -43,15 +43,13 @@ export function StoreProvider({ children }) {
   const report = ({ error }) => setDbError(error ? error.message : null);
 
   const toggleFavorite = useCallback(id => {
-    setState(s => {
-      const on = s.favorites.includes(id);
-      if (uid) {
-        (on ? supabase.from('favorites').delete().eq('game_id', id).eq('user_id', uid)
-            : supabase.from('favorites').upsert({ user_id: uid, game_id: id })).then(report);
-      }
-      return { ...s, favorites: on ? s.favorites.filter(f => f !== id) : [id, ...s.favorites] };
-    });
-  }, [uid]);
+    const on = state.favorites.includes(id);
+    setState(s => ({ ...s, favorites: on ? s.favorites.filter(f => f !== id) : [id, ...s.favorites] }));
+    if (uid) {
+      (on ? supabase.from('favorites').delete().eq('game_id', id).eq('user_id', uid)
+          : supabase.from('favorites').upsert({ user_id: uid, game_id: id })).then(report);
+    }
+  }, [uid, state.favorites]);
 
   const markPlayed = useCallback((id, won) => {
     setState(s => ({ ...s, played: { ...s.played, [id]: Date.now() } }));
