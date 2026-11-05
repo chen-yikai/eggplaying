@@ -1,0 +1,12 @@
+.git
+.expo
+.env
+.env.*
+!.env.example
+node_modules
+backend/node_modules
+dist
+web-build
+favicon.jpg
+*.apk
+*.md

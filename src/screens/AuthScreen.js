@@ -7,13 +7,17 @@ import { useStore } from '../state/store';
 import { useColors } from '../theme/tokens';
 
 function explain(error, tr) {
-  const m = error?.message || '';
-  if (/invalid login/i.test(m)) return tr('Email 或密碼不正確，請再試一次。', 'That email or password is incorrect. Try again.');
-  if (error?.code === 'email_address_invalid' || /email address .*invalid/i.test(m)) return tr('Supabase 不接受這個 Email，請換一個真實可收信的地址。', 'Supabase rejected this email. Use a real address that can receive mail.');
-  if (/already registered/i.test(m)) return tr('這個 Email 已經註冊過了，請直接登入。', 'This email is already registered. Log in instead.');
-  if (/not confirmed/i.test(m)) return tr('這個帳號尚未完成 Email 驗證。', 'This account has not confirmed its email.');
-  if (/rate limit|too many/i.test(m)) return tr('嘗試太多次了，請稍後再試。', 'Too many attempts. Try again shortly.');
-  return m || tr('連線失敗，請稍後再試。', 'Could not connect. Try again shortly.');
+  const zh = {
+    invalid_credentials: 'Email 或密碼不正確，請再試一次。',
+    invalid_email: '請輸入正確的 Email。',
+    invalid_password: '密碼需要 6 到 200 個字元。',
+    invalid_nickname: '請輸入 40 字以內的暱稱。',
+    email_taken: '這個 Email 已經註冊過了，請直接登入。',
+    rate_limited: '嘗試太多次了，請稍後再試。',
+    network: '連不上伺服器，請稍後再試。',
+    no_server: '還沒有設定伺服器位址（EXPO_PUBLIC_API_URL）。',
+  }[error.code];
+  return tr(zh || '發生錯誤，請稍後再試。', error.message);
 }
 
 function FieldRow({ label, children, last }) {
@@ -45,19 +49,11 @@ export default function AuthScreen() {
 
   async function submit() {
     if (!/^\S+@\S+\.\S+$/.test(email.trim())) return setNote({ tone: 'error', text: tr('請輸入正確的 Email。', 'Enter a valid email.') });
-    // Supabase Auth rejects Gmail names under 6 characters, so say why before sending anything.
-    const [name, domain] = email.trim().toLowerCase().split('@');
-    if (domain === 'gmail.com' && name.length < 6) return setNote({ tone: 'error', text: tr('Gmail 帳號 @ 前面至少要 6 個字元，請確認地址是否正確。', 'Gmail names need at least 6 characters before the @. Check the address.') });
     if (password.length < 6) return setNote({ tone: 'error', text: tr('密碼至少需要 6 個字元。', 'Password needs at least 6 characters.') });
     if (register && !nickname.trim()) return setNote({ tone: 'error', text: tr('請輸入暱稱。', 'Enter a nickname.') });
     setBusy(true); setNote(null);
     try {
-      const { data, error } = register ? await signUp(email, password, nickname) : await signIn(email, password);
-      if (error) return setNote({ tone: 'error', text: explain(error, tr) });
-      if (register && !data.session) {
-        setMode('login');
-        setNote({ tone: 'info', text: tr('帳號已建立，但 Supabase 的 Confirm email 還開著，關閉後才能直接登入。', 'Account created, but Confirm email is still on in Supabase. Turn it off to log in right away.') });
-      }
+      await (register ? signUp(email, password, nickname) : signIn(email, password));
     } catch (e) {
       setNote({ tone: 'error', text: explain(e, tr) });
     } finally {

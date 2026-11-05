@@ -3,7 +3,7 @@ import { ActivityIndicator, KeyboardAvoidingView, Platform, View } from 'react-n
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Badge, Banner, Button, EmptyState, Field, Group, IconButton, NavBar, Page, Row, T } from '../components/ui';
 import { ROOMS } from '../data/rooms';
-import { supabase } from '../lib/supabase';
+import { api, chatSocket } from '../lib/api';
 import { useStore } from '../state/store';
 import { useColors } from '../theme/tokens';
 
@@ -25,9 +25,7 @@ export function ChatListScreen({ nav }) {
   );
 }
 
-const unavailable = (msg, tr) => (/does not exist|schema cache|not find/i.test(msg || '')
-  ? tr('聊天室資料表還沒建立，請先執行 npm run db:migrate。', 'Chat tables are missing. Run npm run db:migrate first.')
-  : tr(`聊天室連線失敗：${msg}`, `Chat connection failed: ${msg}`));
+const unavailable = (msg, tr) => tr(`聊天室連線失敗：${msg}`, `Chat connection failed: ${msg}`);
 
 export default function ChatRoomScreen({ room: roomId, nav }) {
   const c = useColors();
@@ -45,26 +43,37 @@ export default function ChatRoomScreen({ room: roomId, nav }) {
 
   useEffect(() => {
     let alive = true;
-    supabase.from('chat_messages').select('id,user_id,author,body,created_at').eq('room', roomId).order('created_at', { ascending: false }).limit(50)
-      .then(({ data, error: e }) => {
-        if (!alive) return;
-        if (e) setError(e.message); else setMessages(old => { const seen = new Set(data.map(m => m.id)); return [...[...data].reverse(), ...old.filter(m => !seen.has(m.id))]; });
-        setLoading(false);
-      });
-    const channel = supabase.channel(`room-${roomId}`)
-      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'chat_messages', filter: `room=eq.${roomId}` }, p => add(p.new))
-      .subscribe();
-    return () => { alive = false; supabase.removeChannel(channel); };
+    let socket = null;
+    let retry = null;
+    const load = () => api(`/rooms/${roomId}/messages`).then(({ messages: rows }) => {
+      if (!alive) return;
+      setError(null);
+      setMessages(old => { const seen = new Set(rows.map(m => m.id)); return [...rows, ...old.filter(m => !seen.has(m.id))]; });
+    }).catch(e => { if (alive) setError(e.message); }).finally(() => { if (alive) setLoading(false); });
+    // A reconnect reloads history, so anything sent while the socket was down still appears.
+    const connect = reload => {
+      socket = chatSocket(roomId);
+      socket.onopen = () => { if (reload) load(); };
+      socket.onmessage = e => add(JSON.parse(e.data));
+      socket.onclose = () => { if (alive) retry = setTimeout(() => connect(true), 3000); };
+    };
+    load();
+    connect(false);
+    return () => { alive = false; clearTimeout(retry); socket?.close(); };
   }, [roomId]);
 
   async function send() {
     const body = draft.trim();
     if (!body || sending) return;
     setSending(true);
-    const { data, error: e } = await supabase.from('chat_messages').insert({ room: roomId, user_id: user.id, author: user.name.slice(0, 40), body }).select('id,user_id,author,body,created_at').single();
-    setSending(false);
-    if (e) { setError(e.message); return; }
-    setError(null); setDraft(''); add(data);
+    try {
+      const { message } = await api(`/rooms/${roomId}/messages`, { method: 'POST', body: { body } });
+      setError(null); setDraft(''); add(message);
+    } catch (e) {
+      setError(e.message);
+    } finally {
+      setSending(false);
+    }
   }
 
   return (

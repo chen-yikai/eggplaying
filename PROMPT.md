@@ -15,11 +15,11 @@
 ## 需求
 
 1. **登入／註冊**：版面參考 bilibili（吉祥物、輸入密碼時遮眼、登入與註冊按鈕並排），但吉祥物和視覺都要原創，不可使用 bilibili 的名稱、角色或素材。
-2. **認證**：只用 Supabase email + 密碼。不做簡訊驗證、第三方登入，也不接任何寄信服務。訪客可以先逛。
+2. **認證**：只用 email + 密碼（自架 API）。不做簡訊驗證、第三方登入，也不接任何寄信服務。訪客可以先逛。
 3. **首頁**：上半部放兩種遊戲類型（益智遊戲、挑戰遊戲），同時要能進入「我的收藏」和「聊天室」。
 4. **遊戲**：益智、挑戰各 10 款，共 20 款，清單在 `src/games/catalog.js`。
 5. **出題**：題目由 Gemini 生成。不適合 AI 出題的遊戲（數獨、迷宮、2048 等）用程式在本機生成。
-6. **收藏與聊天室**：資料存 Supabase；聊天室用 Realtime 即時更新，登入後才能發言。
+6. **收藏與聊天室**：資料存自架 Postgres；聊天室用 WebSocket 即時更新，登入後才能發言。
 7. **中英雙語**：保留，預設繁體中文。
 
 ## 限制
@@ -44,7 +44,7 @@
 
 ## 目前狀態
 
-- 技術：Expo SDK 55、React Native 0.83、React 19.2、`@supabase/supabase-js`。
+- 技術：Expo SDK 55、React Native 0.83、React 19.2、自架 Node API（`backend/`）與 Postgres。
 - 分支：`main` 的 `a4df767` 是基準還原點，開發在 `redesign` 分支。
 - 新 UI 已接上畫面：登入／註冊、首頁、幫我選、20 款遊戲、收藏、聊天室、我的。
 - 資料表已建立（`favorites`、`plays`、`chat_messages`）。
@@ -58,14 +58,11 @@
 - Gemini 實際出題（目前沒有 `EXPO_PUBLIC_GEMINI_API_KEY`，都走內建題庫）。
 - Android 模擬器。
 
-## Supabase
+## 後端與部署
 
-- 連線設定在 `src/lib/supabase.js`（publishable key）。
-- `favorites`、`plays`、`chat_messages` 由 Drizzle 管理：schema 在 `src/db/schema.js`，migration 在 `supabase/migrations/`，由使用者在 `.env.local` 設定 `DATABASE_URL` 後執行 `npm run db:migrate`。開始前先確認是否已建立，檢查時回傳 200 代表已存在、404 代表還沒建。
-- App 執行時仍用 `supabase-js`，不可 import `src/db/`，否則資料庫密碼會被打包進 App。
-- `profiles` 表已存在，含 `id`、`nickname` 欄位，目前未使用；暱稱存在帳號的 user metadata。
-- 註冊要能立即登入，使用者需在後台關閉 **Confirm email**。上次檢查時仍是開啟（`mailer_autoconfirm: false`）。
-- 資料庫密碼在 `.env.local` 的 `DATABASE_URL`（Session pooler，port 5432），可用來跑 migration。沒有 secret key，也沒有 Supabase CLI，所以無法從這裡改後台設定。
+- `docker-compose.yml` 一次部署網站、API 與資料庫，只有 web 容器對外開 port，資料庫密碼不會進 App。
+- API 在 `backend/`，schema 在 `backend/migrations/`，API 啟動時自動套用；App 只透過 `src/lib/api.js` 存取。
+- 手機與本機預覽用 `EXPO_PUBLIC_API_URL` 指向部署位址。
 
 ## Gemini
 
@@ -91,7 +88,6 @@
 
 - 用 `npx expo start --port 8081` 啟動，並在 web 上實際操作每條流程；Chrome 擴充功能連不上時，改用無頭 Chrome 透過 CDP 操作。截圖要親自看過。
 - Android 模擬器上的 Expo Go 為 SDK 55，專案也已升到 SDK 55，但尚未確認能成功開啟，也要測。
-- 不要用 agent 在正式 Supabase 專案建立帳號或輸入密碼。需要登入的流程請使用者自己測試。
 - 回報時要明確區分「實際測過」和「只寫好沒測」。
 
 ## Git
