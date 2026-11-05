@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { Animated, Text, View } from 'react-native';
+import { Animated, View } from 'react-native';
+import { Icon } from '../../components/icons';
 import { spring, T, useReducedMotion } from '../../components/ui';
 import { shuffle } from '../catalog';
 import { useColors } from '../../theme/tokens';
@@ -47,7 +48,7 @@ export default function Maze({ tr, onFinish }) {
       <View accessibilityLabel={tr(`迷宮，已走 ${steps} 步`, `Maze, ${steps} steps taken`)} style={{ width: size, height: size, alignSelf: 'center', backgroundColor: c.surface, flexDirection: 'row', flexWrap: 'wrap' }}>
         {cells.map((w, i) => (
           <View key={i} style={{ width: cell, height: cell, borderColor: c.label, borderTopWidth: w.n ? 2 : 0, borderBottomWidth: w.s ? 2 : 0, borderLeftWidth: w.w ? 2 : 0, borderRightWidth: w.e ? 2 : 0, alignItems: 'center', justifyContent: 'center' }}>
-            {i === N * N - 1 && <Text style={{ fontSize: cell * 0.55 }}>🏁</Text>}
+            {i === N * N - 1 && <Icon name="flag" size={cell * 0.6} color={c.accent} strokeWidth={2} />}
           </View>
         ))}
         <Animated.View pointerEvents="none" style={{ position: 'absolute', width: cell, height: cell, alignItems: 'center', justifyContent: 'center', transform: [{ translateX: x }, { translateY: y }] }}>

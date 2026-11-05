@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { ActivityIndicator, KeyboardAvoidingView, Platform, Text, View } from 'react-native';
+import { ActivityIndicator, KeyboardAvoidingView, Platform, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Banner, Button, EmptyState, Field, Group, IconButton, NavBar, Page, Row, T } from '../components/ui';
+import { Badge, Banner, Button, EmptyState, Field, Group, IconButton, NavBar, Page, Row, T } from '../components/ui';
 import { ROOMS } from '../data/rooms';
 import { supabase } from '../lib/supabase';
 import { useStore } from '../state/store';
@@ -17,7 +17,7 @@ export function ChatListScreen({ nav }) {
         <Group>
           {ROOMS.map((r, i) => (
             <Row key={r.id} last={i === ROOMS.length - 1} label={tr(r.zh, r.en)} title={tr(r.zh, r.en)}
-              leading={<Text style={{ fontSize: 28 }}>{r.emoji}</Text>} onPress={() => nav.push('room', { room: r.id })} />
+              leading={<Badge icon={r.icon} />} onPress={() => nav.push('room', { room: r.id })} />
           ))}
         </Group>
       </Page>
@@ -71,16 +71,19 @@ export default function ChatRoomScreen({ room: roomId, nav }) {
     <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={{ flex: 1 }}>
       <NavBar title={tr('聊天室', 'Chat')} backLabel={tr('返回', 'Back')} onBack={nav.back} />
       <Page bottom={12} scrollRef={scroll} onContentSizeChange={() => scroll.current?.scrollToEnd({ animated: false })}>
-        <T v="title2" accessibilityRole="header" style={{ marginVertical: 8 }}>{room.emoji} {tr(room.zh, room.en)}</T>
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12, marginVertical: 8 }}>
+          <Badge icon={room.icon} />
+          <T v="headline" accessibilityRole="header" style={{ flex: 1 }}>{tr(room.zh, room.en)}</T>
+        </View>
         {error && <Banner tone="error" text={unavailable(error, tr)} />}
         {loading && <ActivityIndicator color={c.accent} style={{ marginTop: 24 }} />}
-        {!loading && !error && !messages.length && <EmptyState emoji="👋" title={tr('還沒有人說話', 'No Messages Yet')} body={tr('當第一個開口的人吧！', 'Be the first to say something!')} />}
+        {!loading && !error && !messages.length && <EmptyState icon="chat" title={tr('還沒有人說話', 'No Messages Yet')} body={tr('當第一個開口的人吧！', 'Be the first to say something!')} />}
         {messages.map(m => {
           const mine = user && m.user_id === user.id;
           return (
             <View key={m.id} style={{ alignSelf: mine ? 'flex-end' : 'flex-start', maxWidth: '82%', marginTop: 10 }}>
               {!mine && <T v="caption" color={c.secondary} style={{ marginBottom: 3, marginLeft: 4 }}>{m.author}</T>}
-              <View style={{ backgroundColor: mine ? c.accent : c.surface, borderRadius: 16, paddingHorizontal: 14, paddingVertical: 9 }}>
+              <View style={{ backgroundColor: mine ? c.accent : c.surface, borderRadius: 18, paddingHorizontal: 14, paddingVertical: 9, borderWidth: mine ? 0 : 1, borderColor: c.edge }}>
                 <T v="body" color={mine ? c.onAccent : c.label}>{m.body}</T>
               </View>
             </View>
@@ -94,7 +97,7 @@ export default function ChatRoomScreen({ room: roomId, nav }) {
             <IconButton icon="send" label={tr('送出', 'Send')} onPress={send} color={draft.trim() ? c.accent : c.placeholder} />
           </View>
         ) : (
-          <Button kind="secondary" icon="log-in-outline" title={tr('登入後加入聊天', 'Log In to Chat')} onPress={() => setAuthOpen(true)} />
+          <Button kind="secondary" icon="logIn" title={tr('登入後加入聊天', 'Log In to Chat')} onPress={() => setAuthOpen(true)} />
         )}
       </View>
     </KeyboardAvoidingView>

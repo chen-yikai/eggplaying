@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Platform, Text, useWindowDimensions, View } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import { Platform, useWindowDimensions, View } from 'react-native';
+import { Icon } from '../../components/icons';
 import { T, Tile } from '../../components/ui';
 import { useColors } from '../../theme/tokens';
 
@@ -30,7 +30,7 @@ export function TimerBar({ left, total, score, scoreLabel }) {
     <View style={{ marginBottom: 14 }}>
       <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 6 }}>
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
-          <Ionicons name="timer-outline" size={18} color={low ? c.danger : c.secondary} />
+          <Icon name="timer" size={18} color={low ? c.danger : c.secondary} strokeWidth={2} />
           <T v="headline" color={low ? c.danger : c.label} accessibilityLabel={`${left}`}>{left}s</T>
         </View>
         {score !== undefined && <T v="headline">{scoreLabel} {score}</T>}
@@ -51,34 +51,34 @@ export function Grid({ n, size, gap = 8, count, render }) {
   );
 }
 
-export function Cell({ text, emoji, selected, disabled, onPress, label, muted, fontSize = 24 }) {
+export function Cell({ text, icon, selected, disabled, onPress, label, muted, fontSize = 24 }) {
   const c = useColors();
   return (
-    <Tile depth={3} radius={12} selected={selected} disabled={disabled} onPress={onPress} label={label || String(text ?? emoji ?? '')}
+    <Tile radius={12} selected={selected} disabled={disabled} onPress={onPress} label={label || String(text ?? '')}
       style={{ flex: 1 }} faceStyle={muted ? { backgroundColor: c.surface2 } : null}>
-      {emoji ? <Text style={{ fontSize: fontSize + 6 }}>{emoji}</Text> : <T style={{ fontSize, lineHeight: fontSize + 6, fontWeight: '700' }}>{text}</T>}
+      {icon ? <Icon name={icon} size={fontSize + 14} color={c.label} /> : <T style={{ fontSize, lineHeight: fontSize + 6, fontWeight: '700' }}>{text}</T>}
     </Tile>
   );
 }
 
 export function Pad({ onMove, tr }) {
   const Key = ({ icon, dir, label }) => (
-    <Tile depth={4} radius={14} label={label} style={{ width: 62, height: 58 }} onPress={() => onMove(dir)}>
+    <Tile radius={14} label={label} style={{ width: 62, height: 58 }} onPress={() => onMove(dir)}>
       <PadIcon name={icon} />
     </Tile>
   );
   return (
     <View style={{ alignItems: 'center', gap: 6, marginTop: 18 }}>
-      <Key icon="arrow-up" dir="up" label={tr('上', 'Up')} />
+      <Key icon="arrowUp" dir="up" label={tr('上', 'Up')} />
       <View style={{ flexDirection: 'row', gap: 6 }}>
-        <Key icon="arrow-back" dir="left" label={tr('左', 'Left')} />
-        <Key icon="arrow-down" dir="down" label={tr('下', 'Down')} />
-        <Key icon="arrow-forward" dir="right" label={tr('右', 'Right')} />
+        <Key icon="arrowLeft" dir="left" label={tr('左', 'Left')} />
+        <Key icon="arrowDown" dir="down" label={tr('下', 'Down')} />
+        <Key icon="arrowRight" dir="right" label={tr('右', 'Right')} />
       </View>
     </View>
   );
 }
-function PadIcon({ name }) { const c = useColors(); return <Ionicons name={name} size={24} color={c.label} />; }
+function PadIcon({ name }) { const c = useColors(); return <Icon name={name} size={24} color={c.label} strokeWidth={2} />; }
 
 export function useArrowKeys(onMove) {
   const fn = useRef(onMove); fn.current = onMove;

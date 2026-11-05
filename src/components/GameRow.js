@@ -1,6 +1,6 @@
 import React from 'react';
-import { Text, View } from 'react-native';
-import { Chip, IconButton, Row } from './ui';
+import { View } from 'react-native';
+import { Badge, Chip, IconButton, Row } from './ui';
 import { useStore } from '../state/store';
 import { useColors } from '../theme/tokens';
 
@@ -13,7 +13,7 @@ export default function GameRow({ game, nav, last }) {
   const name = tr(game.zh, game.en);
   return (
     <Row last={last} label={name} title={name} subtitle={tr(game.dz, game.de)} onPress={() => nav.push('game', { id: game.id })}
-      leading={<Text style={{ fontSize: 28, width: 38, textAlign: 'center' }}>{game.emoji}</Text>}
+      leading={<Badge icon={game.icon} tone={game.type} />}
       trailing={
         <View style={{ alignItems: 'flex-end', gap: 3 }}>
           {!played[game.id] && <Chip tone="accent" text={tr('沒玩過', 'New')} />}
@@ -21,7 +21,7 @@ export default function GameRow({ game, nav, last }) {
         </View>
       }
       accessory={
-        <IconButton icon={saved ? 'heart' : 'heart-outline'} color={saved ? c.danger : c.secondary}
+        <IconButton icon="heart" filled={saved} color={saved ? c.danger : c.secondary}
           label={saved ? tr(`取消收藏${name}`, `Remove ${name} from saved`) : tr(`收藏${name}`, `Save ${name}`)} onPress={() => toggleFavorite(game.id)} />
       } />
   );

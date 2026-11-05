@@ -21,11 +21,11 @@ export default function FavoritesScreen({ nav }) {
             <Group>{games.map((g, i) => <GameRow key={g.id} game={g} nav={nav} last={i === games.length - 1} />)}</Group>
           </>
         ) : (
-          <EmptyState emoji="🤍" title={tr('還沒有收藏', 'Nothing Saved Yet')} body={tr('玩到喜歡的遊戲，按愛心就會出現在這裡。', 'Tap the heart on a game you like and it lands here.')}>
-            <Button icon="game-controller" title={tr('去找遊戲', 'Find a Game')} onPress={() => nav.tab('home')} />
+          <EmptyState icon="heart" title={tr('還沒有收藏', 'Nothing Saved Yet')} body={tr('玩到喜歡的遊戲，按愛心就會出現在這裡。', 'Tap the heart on a game you like and it lands here.')}>
+            <Button icon="gamepad" title={tr('去找遊戲', 'Find a Game')} onPress={() => nav.tab('home')} />
           </EmptyState>
         )}
-        {!user && <Button style={{ marginTop: 14 }} kind="secondary" icon="log-in-outline" title={tr('登入後同步收藏', 'Log In to Sync Saves')} onPress={() => setAuthOpen(true)} />}
+        {!user && <Button style={{ marginTop: 14 }} kind="secondary" icon="logIn" title={tr('登入後同步收藏', 'Log In to Sync Saves')} onPress={() => setAuthOpen(true)} />}
       </Page>
     </View>
   );

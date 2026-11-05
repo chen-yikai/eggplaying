@@ -89,7 +89,7 @@ export default function AuthScreen() {
           </FieldRow>
           <FieldRow label={tr('密碼', 'Password')} last>
             <Field ref={passwordRef} accessibilityLabel={tr('密碼', 'Password')} style={{ flex: 1 }} value={password} onChangeText={setPassword} placeholder={tr('至少 6 個字元', 'At least 6 characters')} secureTextEntry={!reveal} autoCapitalize="none" autoComplete={register ? 'new-password' : 'current-password'} returnKeyType="go" onSubmitEditing={submit} onFocus={() => setCovering(true)} onBlur={() => setCovering(false)} />
-            <IconButton icon={reveal ? 'eye-off-outline' : 'eye-outline'} label={reveal ? tr('隱藏密碼', 'Hide password') : tr('顯示密碼', 'Show password')} onPress={() => setReveal(!reveal)} color={c.secondary} />
+            <IconButton icon={reveal ? 'eyeOff' : 'eye'} label={reveal ? tr('隱藏密碼', 'Hide password') : tr('顯示密碼', 'Show password')} onPress={() => setReveal(!reveal)} color={c.secondary} />
           </FieldRow>
         </Group>
         {note && <Banner tone={note.tone} text={note.text} />}

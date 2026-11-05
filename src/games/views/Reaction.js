@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Pressable, View } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import { Icon } from '../../components/icons';
 import { T } from '../../components/ui';
 import { useColors } from '../../theme/tokens';
 import { randInt } from './shared';
@@ -39,7 +39,7 @@ export default function Reaction({ tr, onFinish }) {
       <T v="subhead" color={c.secondary} style={{ marginBottom: 14 }}>{tr(`第 ${times.length + 1} / ${ROUNDS} 次`, `Try ${times.length + 1} of ${ROUNDS}`)}{times.length ? ` · ${times[times.length - 1]} ms` : ''}</T>
       <Pressable accessibilityRole="button" accessibilityLabel={go ? tr('現在按', 'Tap now') : tr('等待提示', 'Wait for it')} accessibilityLiveRegion="assertive" delayPressIn={0} onPressIn={tap}
         style={{ height: 320, borderRadius: 24, alignItems: 'center', justifyContent: 'center', backgroundColor: go ? c.accent : c.surface2 }}>
-        <Ionicons name={go ? 'flash' : 'hourglass-outline'} size={56} color={go ? c.onAccent : c.secondary} />
+        <Icon name={go ? 'flash' : 'hourglass'} size={56} color={go ? c.onAccent : c.secondary} filled={go} />
         <T v="title" color={go ? c.onAccent : c.label} style={{ marginTop: 10 }}>{go ? tr('現在按！', 'Tap Now!') : early ? tr('太早了，再等等', 'Too soon, wait') : tr('等提示…', 'Wait for it…')}</T>
       </Pressable>
     </View>

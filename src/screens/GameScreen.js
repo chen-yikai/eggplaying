@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import { ActivityIndicator, Text, View } from 'react-native';
-import { Button, Chip, IconButton, NavBar, Page, T } from '../components/ui';
-import { gameById, loadEmoji, loadPairs, loadQuiz, loadWords } from '../games/catalog';
+import { ActivityIndicator, View } from 'react-native';
+import { Badge, Button, Chip, IconButton, NavBar, Page, T } from '../components/ui';
+import { gameById, loadMemorySet, loadPairs, loadQuiz, loadWords } from '../games/catalog';
 import FindDifferent from '../games/views/FindDifferent';
 import G2048 from '../games/views/G2048';
 import Matchstick from '../games/views/Matchstick';
@@ -25,7 +25,7 @@ function loader(game, lang) {
   if (game.kind === 'quiz') return loadQuiz(game, lang);
   if (game.kind === 'wordsearch') return loadWords(lang);
   if (game.kind === 'finddiff') return loadPairs();
-  if (game.kind === 'memory') return loadEmoji();
+  if (game.kind === 'memory') return loadMemorySet();
   return null;
 }
 
@@ -54,12 +54,12 @@ export default function GameScreen({ gameId, nav }) {
   return (
     <View style={{ flex: 1 }}>
       <NavBar title={name} backLabel={tr('返回', 'Back')} onBack={nav.back}
-        right={<IconButton icon={saved ? 'heart' : 'heart-outline'} color={saved ? c.danger : c.accent} label={saved ? tr('取消收藏', 'Remove from saved') : tr('收藏', 'Save')} onPress={() => toggleFavorite(game.id)} />} />
+        right={<IconButton icon="heart" filled={saved} color={saved ? c.danger : c.accent} label={saved ? tr('取消收藏', 'Remove from saved') : tr('收藏', 'Save')} onPress={() => toggleFavorite(game.id)} />} />
       <Page>
         {result ? (
           <View style={{ alignItems: 'center', paddingTop: 28 }}>
-            <Text style={{ fontSize: 68 }}>{result.won ? '🎉' : game.emoji}</Text>
-            <T v="title" accessibilityRole="header" accessibilityLiveRegion="polite" style={{ marginTop: 12, textAlign: 'center' }}>{result.title}</T>
+            <Badge icon={result.won ? 'party' : game.icon} tone={result.won ? 'puzzle' : 'neutral'} size={96} />
+            <T v="title" accessibilityRole="header" accessibilityLiveRegion="polite" style={{ marginTop: 18, textAlign: 'center' }}>{result.title}</T>
             <T v="body" color={c.secondary} style={{ marginTop: 4, textAlign: 'center' }}>{result.detail}</T>
             <View style={{ alignSelf: 'stretch', gap: 10, marginTop: 26 }}>
               <Button icon="shuffle" title={tr('換一款新鮮的', 'Try Something New')} onPress={() => nav.replace('game', { id: pickFresh(game.id).id })} />
@@ -73,7 +73,7 @@ export default function GameScreen({ gameId, nav }) {
           </View>
         ) : (
           <>
-            {needsData && <View style={{ alignSelf: 'flex-start', marginBottom: 12 }}><Chip tone={data.source === 'gemini' ? 'accent' : 'neutral'} text={data.source === 'gemini' ? tr('Gemini 出題', 'By Gemini') : tr('內建題庫', 'Built-in set')} /></View>}
+            {needsData && data.source && <View style={{ alignSelf: 'flex-start', marginBottom: 12 }}><Chip tone={data.source === 'gemini' ? 'accent' : 'neutral'} text={data.source === 'gemini' ? tr('Gemini 出題', 'By Gemini') : tr('內建題庫', 'Built-in set')} /></View>}
             <View_ key={round} game={game} tr={tr} data={data} onFinish={finish} />
           </>
         )}
