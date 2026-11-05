@@ -7,8 +7,6 @@ services:
     build:
       context: .
       dockerfile: web/Dockerfile
-      args:
-        EXPO_PUBLIC_GEMINI_API_KEY: ${EXPO_PUBLIC_GEMINI_API_KEY:-}
     restart: unless-stopped
     depends_on:
       api:
@@ -24,6 +22,7 @@ services:
         condition: service_healthy
     environment:
       JWT_SECRET: ${JWT_SECRET:?Set JWT_SECRET in .env}
+      GEMINI_API_KEY: ${GEMINI_API_KEY:-}
       PGHOST: db
       PGPORT: 5432
       PGUSER: postgres

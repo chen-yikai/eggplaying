@@ -14,9 +14,9 @@ src/
   data/                  Chat room topics
   state/                 store.js (session, saves, play history, language)
   theme/                 tokens.js (colours and type)
-  lib/                   API and Gemini clients
+  lib/                   API client
   legacy/                Earlier screens nothing imports; kept for reference
-backend/                 Express API, chat WebSocket and SQL migrations
+backend/                 Express API, chat WebSocket, Gemini questions and SQL migrations
 web/                     Web image: nginx serves the site and passes /api to the API
 docker-compose.yml       Website, API and database as one deployment
 .env.example             Copy to .env

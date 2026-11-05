@@ -3,6 +3,7 @@ import rateLimit from 'express-rate-limit';
 import { DUMMY_HASH, hashPassword, requireUser, signToken, verifyPassword } from './auth.js';
 import { broadcast, validRoom } from './chat.js';
 import { sql } from './db.js';
+import { generateQuestions, generateWords, geminiConfigured, questionKinds, underDailyLimit } from './questions.js';
 
 const fail = (res, status, code, message) => res.status(status).json({ error: { code, message } });
 const limiter = (windowMs, limit) => rateLimit({
@@ -121,6 +122,27 @@ api.post('/rooms/:room/messages', limiter(60 * 1000, 30), requireUser, async (re
   if (!message) return fail(res, 401, 'unauthorized', 'Log in again.');
   broadcast(room, message);
   res.status(201).json({ message });
+});
+
+// ---- fresh questions: open to guests, so limited per address and across everyone per day
+api.post('/questions/:kind', limiter(60 * 1000, 20), async (req, res) => {
+  const { kind } = req.params;
+  if (kind !== 'words' && !questionKinds.includes(kind)) return fail(res, 404, 'not_found', 'Not found.');
+  const unavailable = () => fail(res, 503, 'questions_unavailable', 'Fresh questions are unavailable right now.');
+  if (!geminiConfigured() || !underDailyLimit()) return unavailable();
+  const lang = req.body?.lang === 'en' ? 'en' : 'zh';
+  const avoid = (Array.isArray(req.body?.avoid) ? req.body.avoid : []).filter(a => typeof a === 'string').slice(0, 20).map(a => a.slice(0, 200));
+  try {
+    if (kind === 'words') {
+      const words = await generateWords(lang, avoid);
+      return words.length >= 3 ? res.json({ words }) : unavailable();
+    }
+    const questions = await generateQuestions(kind, lang, avoid);
+    return questions.length >= 3 ? res.json({ questions }) : unavailable();
+  } catch (e) {
+    console.warn(`Gemini ${kind}: ${e.message}`);
+    return unavailable();
+  }
 });
 
 api.use((req, res) => fail(res, 404, 'not_found', 'Not found.'));

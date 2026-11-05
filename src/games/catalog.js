@@ -1,6 +1,6 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { PICTURES } from '../components/icons';
-import { generateJSON, hasGemini } from '../lib/gemini';
+import { api } from '../lib/api';
 
 const g = (id, type, zh, en, icon, secs, kind, dz, de, extra = {}) => ({ id, type, zh, en, icon, secs, kind, dz, de, ...extra });
 
@@ -93,77 +93,38 @@ const MEMORY_SET = [
   { icon: 'balloon', zh: '氣球', en: 'Balloon' }, { icon: 'watermelon', zh: '西瓜', en: 'Watermelon' }, { icon: 'star', zh: '星星', en: 'Star' },
 ];
 
-const MCQ_SCHEMA = { type: 'object', properties: { questions: { type: 'array', minItems: 3, maxItems: 12, items: { type: 'object', properties: {
-  prompt: { type: 'string' }, options: { type: 'array', items: { type: 'string' }, minItems: 2, maxItems: 4 }, answer: { type: 'integer', minimum: 0, maximum: 3 },
-}, required: ['prompt', 'options', 'answer'] } } }, required: ['questions'] };
-
-const PICTURE_NAMES = Object.keys(PICTURES);
-const REBUS_SCHEMA = { type: 'object', properties: { questions: { type: 'array', minItems: 3, maxItems: 12, items: { type: 'object', properties: {
-  ...MCQ_SCHEMA.properties.questions.items.properties,
-  icons: { type: 'array', minItems: 2, maxItems: 3, items: { type: 'string', enum: PICTURE_NAMES } },
-}, required: ['prompt', 'options', 'answer', 'icons'] } } }, required: ['questions'] };
-
-const STYLE = {
-  rebus: '從 icons 可用的圖示挑 2 到 3 個，組合起來暗示一個常見事物。prompt 只寫要猜的類別（例如「猜節慶」），不可描述圖示內容；答案要靠圖示組合才猜得到，不可直接是其中一個圖示，給 4 個選項',
-  logic: '三句話以內的邏輯推理或數列題，答案必須能嚴格推導，給 4 個選項',
-  quiz: '十秒內能回答的有趣常識題，給 4 個選項',
-  truefalse: '令人意外但確實為真或為假的冷知識敘述，options 固定為對與錯（英文為 True 與 False）',
-  idiom: '中文時為成語缺一字（用＿標示），英文時為諺語缺一字，給 4 個選項',
-  riddle: '簡短的謎語或腦筋急轉彎，答案要公認，給 4 個選項',
-  oddone: '列出同類事物中混入一個異類，問哪個不屬於同類，給 4 個選項',
-};
-
-const norm = s => String(s || '').trim();
-const hasEmoji = s => /\p{Extended_Pictographic}/u.test(s);
-const validMCQ = x => {
-  const options = (x.options || []).map(norm);
-  if (hasEmoji(norm(x.prompt)) || options.some(hasEmoji)) return false;
-  return norm(x.prompt) && options.length >= 2 && options.every(Boolean) && new Set(options).size === options.length
-    && Number.isInteger(x.answer) && x.answer >= 0 && x.answer < options.length;
-};
 const shuffleOptions = x => {
   const correct = x.options[x.answer];
   const options = shuffle(x.options);
   return { prompt: x.prompt, icons: x.icons, options, answer: options.indexOf(correct) };
 };
+const questionKey = x => [x.prompt, ...(x.icons || [])].join(' ');
 
 async function seen(id) { try { return JSON.parse(await AsyncStorage.getItem(`seen:${id}`)) || []; } catch { return []; } }
 async function remember(id, items) { try { await AsyncStorage.setItem(`seen:${id}`, JSON.stringify([...items, ...(await seen(id))].slice(0, 40))); } catch {} }
 
-const langName = lang => (lang === 'zh' ? '繁體中文（台灣用語）' : 'English');
-const SYSTEM = '你是手機休閒遊戲的出題者。題目要新鮮有趣、事實正確、適合所有年齡、十秒內能讀完，不要重複已列出的題目。任何文字都不可使用 emoji。';
-const questionKey = x => [x.prompt, ...(x.icons || [])].join(' ');
+// The server waits up to 12 seconds on Gemini, so this only trips if the server itself stalls.
+const TIMEOUT_MS = 15000;
+const ask = (kind, lang, avoid) => api(`/questions/${kind}`, { method: 'POST', body: { lang, avoid: avoid.slice(0, 20) }, timeoutMs: TIMEOUT_MS });
 
 // Returns { items, source }. Any failure falls back to the built-in bank so play never stalls.
-export async function loadQuiz(game, lang, count = 8) {
+export async function loadQuiz(game, lang) {
   const avoid = await seen(game.id);
-  if (hasGemini()) {
-    try {
-      const { questions } = await generateJSON({
-        system: SYSTEM, schema: game.ai === 'rebus' ? REBUS_SCHEMA : MCQ_SCHEMA,
-        input: `語言：${langName(lang)}。題型：${STYLE[game.ai]}。出 ${count} 題。answer 是正確選項在 options 的索引。避開：${JSON.stringify(avoid.slice(0, 20))}`,
-      });
-      const items = questions.filter(validMCQ).filter(x => game.ai !== 'rebus' || (x.icons?.length >= 2 && x.icons.every(n => PICTURES[n])))
-        .map(x => ({ ...x, prompt: norm(x.prompt), options: x.options.map(norm) })).filter(x => !avoid.includes(questionKey(x)));
-      if (items.length >= 3) { remember(game.id, items.map(questionKey)); return { items: items.map(shuffleOptions), source: 'gemini' }; }
-    } catch (e) { console.warn('Gemini quiz fallback:', e.message); }
-  }
+  try {
+    const { questions } = await ask(game.ai, lang, avoid);
+    const items = questions.filter(x => !x.icons || x.icons.every(n => PICTURES[n])).filter(x => !avoid.includes(questionKey(x)));
+    if (items.length >= 3) { remember(game.id, items.map(questionKey)); return { items: items.map(shuffleOptions), source: 'gemini' }; }
+  } catch (e) { console.warn('Fresh questions unavailable:', e.message); }
   return { items: shuffle(BUILTIN[game.ai]).map(x => shuffleOptions(x[lang])), source: 'builtin' };
 }
 
 export async function loadWords(lang, count = 3) {
-  if (hasGemini()) {
-    try {
-      const avoid = await seen('wordsearch');
-      const { words } = await generateJSON({
-        system: SYSTEM,
-        schema: { type: 'object', properties: { words: { type: 'array', minItems: 3, maxItems: 6, items: { type: 'object', properties: { word: { type: 'string' }, hint: { type: 'string' } }, required: ['word', 'hint'] } } }, required: ['words'] },
-        input: `給 ${count + 2} 個 3 到 5 個字母的常見英文單字（全大寫 A-Z），hint 用${langName(lang)}提示意思。避開：${JSON.stringify(avoid.slice(0, 20))}`,
-      });
-      const items = words.map(w => ({ word: norm(w.word).toUpperCase(), hint: norm(w.hint) })).filter(w => /^[A-Z]{3,5}$/.test(w.word) && w.hint && !avoid.includes(w.word));
-      if (items.length >= count) { remember('wordsearch', items.map(i => i.word)); return { items: items.slice(0, count), source: 'gemini' }; }
-    } catch (e) { console.warn('Gemini words fallback:', e.message); }
-  }
+  try {
+    const avoid = await seen('wordsearch');
+    const { words } = await ask('words', lang, avoid);
+    const items = words.filter(w => !avoid.includes(w.word));
+    if (items.length >= count) { remember('wordsearch', items.map(i => i.word)); return { items: items.slice(0, count), source: 'gemini' }; }
+  } catch (e) { console.warn('Fresh words unavailable:', e.message); }
   return { items: shuffle(BUILTIN_WORDS).slice(0, count).map(([word, z, e]) => ({ word, hint: lang === 'zh' ? z : e })), source: 'builtin' };
 }
 

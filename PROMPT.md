@@ -25,7 +25,7 @@
 ## 限制
 
 - 這是 demo，所有程式都放在這個 Expo 專案內，不架後端、不寫 Edge Function，也不要過度設計。
-- Gemini 由 App 直接呼叫，金鑰放 `.env.local` 的 `EXPO_PUBLIC_GEMINI_API_KEY`。不可寫進程式或提交到 git。此金鑰會被打包進 App，上線前必須改走後端。
+- Gemini 只由後端呼叫（`backend/src/questions.js`），金鑰放部署用 `.env` 的 `GEMINI_API_KEY`，只有 API 容器讀得到，不可寫進程式或提交到 git。
 - 沒有金鑰或呼叫失敗時要退回內建題庫，遊戲不能卡住。
 - 所有 AI 回傳內容都要先驗證才顯示。
 - 不要重建 `src/legacy/` 的舊畫面。除非使用者要求，也不要刪除它們。
@@ -55,7 +55,6 @@
 
 - 實際登入、註冊、登出，以及登入後收藏與遊玩紀錄寫入資料庫（agent 不可在正式專案建立帳號）。
 - 聊天室發訊息與 Realtime 即時更新（需要登入）。
-- Gemini 實際出題（目前沒有 `EXPO_PUBLIC_GEMINI_API_KEY`，都走內建題庫）。
 - Android 模擬器。
 
 ## 後端與部署

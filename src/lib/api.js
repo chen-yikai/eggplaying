@@ -14,12 +14,15 @@ export class ApiError extends Error {
   }
 }
 
-export async function api(path, { method = 'GET', body } = {}) {
+export async function api(path, { method = 'GET', body, timeoutMs } = {}) {
   if (!BASE && Platform.OS !== 'web') throw new ApiError('EXPO_PUBLIC_API_URL is not set.', 'no_server', 0);
+  const ctrl = new AbortController();
+  const timer = timeoutMs ? setTimeout(() => ctrl.abort(), timeoutMs) : null;
   let res;
   try {
     res = await fetch(`${BASE}/api${path}`, {
       method,
+      signal: ctrl.signal,
       headers: {
         ...(body ? { 'Content-Type': 'application/json' } : null),
         ...(token ? { Authorization: `Bearer ${token}` } : null),
@@ -28,6 +31,8 @@ export async function api(path, { method = 'GET', body } = {}) {
     });
   } catch {
     throw new ApiError('Could not reach the server.', 'network', 0);
+  } finally {
+    clearTimeout(timer);
   }
   if (res.status === 204) return null;
   const data = await res.json().catch(() => null);
