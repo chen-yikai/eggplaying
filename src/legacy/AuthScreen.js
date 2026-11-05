@@ -12,7 +12,7 @@ import {
   ScrollView
 } from 'react-native';
 
-import { supabase } from './supabase';
+import { supabase } from '../lib/supabase';
 
 export default function AuthScreen({ language = 'zh' }) {
   const [register, setRegister] = useState(false);
