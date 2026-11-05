@@ -9,6 +9,7 @@ import { useColors } from '../theme/tokens';
 function explain(error, tr) {
   const m = error?.message || '';
   if (/invalid login/i.test(m)) return tr('Email 或密碼不正確，請再試一次。', 'That email or password is incorrect. Try again.');
+  if (error?.code === 'email_address_invalid' || /email address .*invalid/i.test(m)) return tr('Supabase 不接受這個 Email，請換一個真實可收信的地址。', 'Supabase rejected this email. Use a real address that can receive mail.');
   if (/already registered/i.test(m)) return tr('這個 Email 已經註冊過了，請直接登入。', 'This email is already registered. Log in instead.');
   if (/not confirmed/i.test(m)) return tr('這個帳號尚未完成 Email 驗證。', 'This account has not confirmed its email.');
   if (/rate limit|too many/i.test(m)) return tr('嘗試太多次了，請稍後再試。', 'Too many attempts. Try again shortly.');
@@ -44,6 +45,9 @@ export default function AuthScreen() {
 
   async function submit() {
     if (!/^\S+@\S+\.\S+$/.test(email.trim())) return setNote({ tone: 'error', text: tr('請輸入正確的 Email。', 'Enter a valid email.') });
+    // Supabase Auth rejects Gmail names under 6 characters, so say why before sending anything.
+    const [name, domain] = email.trim().toLowerCase().split('@');
+    if (domain === 'gmail.com' && name.length < 6) return setNote({ tone: 'error', text: tr('Gmail 帳號 @ 前面至少要 6 個字元，請確認地址是否正確。', 'Gmail names need at least 6 characters before the @. Check the address.') });
     if (password.length < 6) return setNote({ tone: 'error', text: tr('密碼至少需要 6 個字元。', 'Password needs at least 6 characters.') });
     if (register && !nickname.trim()) return setNote({ tone: 'error', text: tr('請輸入暱稱。', 'Enter a nickname.') });
     setBusy(true); setNote(null);
