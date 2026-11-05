@@ -1,44 +1,45 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { PICTURES } from '../components/icons';
 import { generateJSON, hasGemini } from '../lib/gemini';
 
-const g = (id, type, zh, en, emoji, secs, kind, dz, de, extra = {}) => ({ id, type, zh, en, emoji, secs, kind, dz, de, ...extra });
+const g = (id, type, zh, en, icon, secs, kind, dz, de, extra = {}) => ({ id, type, zh, en, icon, secs, kind, dz, de, ...extra });
 
 export const GAMES = [
-  g('sudoku', 'puzzle', '迷你數獨', 'Mini Sudoku', '🔢', 90, 'sudoku', '每列每行 1～4 不重複', 'No repeats in any row or column'),
-  g('wordsearch', 'puzzle', '找字遊戲', 'Word Search', '🔤', 60, 'wordsearch', '依序點出藏起來的單字', 'Tap the hidden word in order'),
-  g('finddiff', 'puzzle', '找不同', 'Spot the Odd', '🔍', 45, 'finddiff', '一眼抓出不一樣的圖案', 'Find the one that differs'),
-  g('matchstick', 'puzzle', '火柴棒謎題', 'Matchsticks', '🔥', 90, 'matchstick', '移動一根，算式就成立', 'Move one stick to fix the sum'),
-  g('slide', 'puzzle', '數字拼圖', 'Sliding Tiles', '🧩', 120, 'slide', '把數字滑回 1～8', 'Slide the tiles back to 1–8'),
-  g('memory', 'puzzle', '記憶配對', 'Memory Match', '🃏', 90, 'memory', '翻牌找出所有配對', 'Flip cards to find every pair'),
-  g('rebus', 'puzzle', '圖像猜謎', 'Emoji Rebus', '🧠', 90, 'quiz', '看表情符號猜答案', 'Guess the answer from emoji', { ai: 'rebus' }),
-  g('maze', 'puzzle', '迷宮', 'Maze', '🌀', 60, 'maze', '每次都是新迷宮', 'A brand-new maze every time'),
-  g('logic', 'puzzle', '邏輯推理', 'Logic Puzzles', '💭', 120, 'quiz', '短短幾句，推出答案', 'Short clues, one conclusion', { ai: 'logic' }),
-  g('g2048', 'puzzle', '數字合成', '2048 Sprint', '🎯', 180, 'g2048', '三分鐘衝最高分', 'Highest score in three minutes'),
-  g('quizrush', 'challenge', '快問快答', 'Quiz Rush', '⚡', 45, 'quiz', '45 秒答越多越好', 'Answer fast for 45 seconds', { ai: 'quiz', limit: 45 }),
-  g('truefalse', 'challenge', '是非搶答', 'True or False', '⭕', 30, 'quiz', '30 秒判斷真假', 'Call it in 30 seconds', { ai: 'truefalse', limit: 30 }),
-  g('idiom', 'challenge', '成語填空', 'Proverb Fill', '📜', 45, 'quiz', '補上缺的那個字', 'Fill in the missing word', { ai: 'idiom', limit: 45 }),
-  g('riddle', 'challenge', '謎語衝刺', 'Riddle Dash', '🎭', 60, 'quiz', '腦筋急轉彎限時版', 'Brain teasers against the clock', { ai: 'riddle', limit: 60 }),
-  g('oddone', 'challenge', '誰是異類', 'Odd One Out', '👀', 45, 'quiz', '選出不屬於同類的', 'Pick what does not belong', { ai: 'oddone', limit: 45 }),
-  g('mental', 'challenge', '心算衝刺', 'Mental Math', '➕', 45, 'mental', '45 秒連續心算', 'Rapid sums for 45 seconds'),
-  g('stroop', 'challenge', '顏色陷阱', 'Colour Trap', '🎨', 30, 'stroop', '選字的顏色，不是字義', 'Pick the ink, not the word'),
-  g('reaction', 'challenge', '反應力', 'Reaction', '🚦', 30, 'reaction', '看到提示立刻按', 'Tap the moment it says go'),
-  g('schulte', 'challenge', '數字追擊', 'Number Chase', '🏃', 40, 'schulte', '照順序點完 1～16', 'Tap 1 to 16 in order'),
-  g('simon', 'challenge', '記憶序列', 'Sequence', '🎵', 60, 'simon', '跟著亮燈順序按', 'Repeat the growing sequence'),
+  g('sudoku', 'puzzle', '迷你數獨', 'Mini Sudoku', 'grid', 90, 'sudoku', '每列每行 1～4 不重複', 'No repeats in any row or column'),
+  g('wordsearch', 'puzzle', '找字遊戲', 'Word Search', 'letters', 60, 'wordsearch', '依序點出藏起來的單字', 'Tap the hidden word in order'),
+  g('finddiff', 'puzzle', '找不同', 'Spot the Odd', 'search', 45, 'finddiff', '一眼抓出不一樣的圖案', 'Find the one that differs'),
+  g('matchstick', 'puzzle', '火柴棒謎題', 'Matchsticks', 'match', 90, 'matchstick', '移動一根，算式就成立', 'Move one stick to fix the sum'),
+  g('slide', 'puzzle', '數字拼圖', 'Sliding Tiles', 'tiles', 120, 'slide', '把數字滑回 1～8', 'Slide the tiles back to 1–8'),
+  g('memory', 'puzzle', '記憶配對', 'Memory Match', 'cards', 90, 'memory', '翻牌找出所有配對', 'Flip cards to find every pair'),
+  g('rebus', 'puzzle', '圖像猜謎', 'Picture Rebus', 'bulb', 90, 'quiz', '看圖示猜答案', 'Guess the answer from pictures', { ai: 'rebus' }),
+  g('maze', 'puzzle', '迷宮', 'Maze', 'maze', 60, 'maze', '每次都是新迷宮', 'A brand-new maze every time'),
+  g('logic', 'puzzle', '邏輯推理', 'Logic Puzzles', 'branch', 120, 'quiz', '短短幾句，推出答案', 'Short clues, one conclusion', { ai: 'logic' }),
+  g('g2048', 'puzzle', '數字合成', '2048 Sprint', 'merge', 180, 'g2048', '三分鐘衝最高分', 'Highest score in three minutes'),
+  g('quizrush', 'challenge', '快問快答', 'Quiz Rush', 'flash', 45, 'quiz', '45 秒答越多越好', 'Answer fast for 45 seconds', { ai: 'quiz', limit: 45 }),
+  g('truefalse', 'challenge', '是非搶答', 'True or False', 'truefalse', 30, 'quiz', '30 秒判斷真假', 'Call it in 30 seconds', { ai: 'truefalse', limit: 30 }),
+  g('idiom', 'challenge', '成語填空', 'Proverb Fill', 'scroll', 45, 'quiz', '補上缺的那個字', 'Fill in the missing word', { ai: 'idiom', limit: 45 }),
+  g('riddle', 'challenge', '謎語衝刺', 'Riddle Dash', 'question', 60, 'quiz', '腦筋急轉彎限時版', 'Brain teasers against the clock', { ai: 'riddle', limit: 60 }),
+  g('oddone', 'challenge', '誰是異類', 'Odd One Out', 'eye', 45, 'quiz', '選出不屬於同類的', 'Pick what does not belong', { ai: 'oddone', limit: 45 }),
+  g('mental', 'challenge', '心算衝刺', 'Mental Math', 'calc', 45, 'mental', '45 秒連續心算', 'Rapid sums for 45 seconds'),
+  g('stroop', 'challenge', '顏色陷阱', 'Colour Trap', 'palette', 30, 'stroop', '選字的顏色，不是字義', 'Pick the ink, not the word'),
+  g('reaction', 'challenge', '反應力', 'Reaction', 'stoplight', 30, 'reaction', '看到提示立刻按', 'Tap the moment it says go'),
+  g('schulte', 'challenge', '數字追擊', 'Number Chase', 'speed', 40, 'schulte', '照順序點完 1～16', 'Tap 1 to 16 in order'),
+  g('simon', 'challenge', '記憶序列', 'Sequence', 'music', 60, 'simon', '跟著亮燈順序按', 'Repeat the growing sequence'),
 ];
 export const gameById = id => GAMES.find(x => x.id === id);
 export const shuffle = a => { const r = [...a]; for (let i = r.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [r[i], r[j]] = [r[j], r[i]]; } return r; };
 
-const q = (zp, ep, zo, eo, answer) => ({ zh: { prompt: zp, options: zo, answer }, en: { prompt: ep, options: eo, answer } });
+const q = (zp, ep, zo, eo, answer, icons) => ({ zh: { prompt: zp, options: zo, answer, icons }, en: { prompt: ep, options: eo, answer, icons } });
 const TF = [['對', '錯'], ['True', 'False']];
 const tf = (zp, ep, yes) => q(zp, ep, TF[0], TF[1], yes ? 0 : 1);
 
 const BUILTIN = {
   rebus: [
-    q('🌧️ + 🏹 猜天氣現象', '🌧️ + 🏹 guess the weather', ['彩虹', '颱風', '閃電', '下雪'], ['Rainbow', 'Typhoon', 'Lightning', 'Snow'], 0),
-    q('🐝 + 🍯 猜甜食來源', '🐝 + 🍯 guess the food', ['蜂蜜', '果醬', '砂糖', '巧克力'], ['Honey', 'Jam', 'Sugar', 'Chocolate'], 0),
-    q('🌙 + 🍰 猜節慶', '🌙 + 🍰 guess the festival', ['中秋節', '端午節', '元宵節', '清明節'], ['Mid-Autumn', 'Dragon Boat', 'Lantern', 'Qingming'], 0),
-    q('🧊 + 🏔️ 猜地形', '🧊 + 🏔️ guess the landform', ['冰川', '沙漠', '火山', '草原'], ['Glacier', 'Desert', 'Volcano', 'Prairie'], 0),
-    q('🐉 + 🛶 猜節慶', '🐉 + 🛶 guess the festival', ['端午節', '春節', '中秋節', '重陽節'], ['Dragon Boat', 'Lunar New Year', 'Mid-Autumn', 'Double Ninth'], 0),
+    q('猜天氣現象', 'Guess the weather', ['彩虹', '颱風', '閃電', '下雪'], ['Rainbow', 'Typhoon', 'Lightning', 'Snow'], 0, ['rain', 'bow']),
+    q('猜甜食來源', 'Guess the food', ['蜂蜜', '果醬', '砂糖', '巧克力'], ['Honey', 'Jam', 'Sugar', 'Chocolate'], 0, ['bee', 'honey']),
+    q('猜節慶', 'Guess the festival', ['中秋節', '端午節', '元宵節', '清明節'], ['Mid-Autumn', 'Dragon Boat', 'Lantern', 'Qingming'], 0, ['moon', 'cake']),
+    q('猜地形', 'Guess the landform', ['冰川', '沙漠', '火山', '草原'], ['Glacier', 'Desert', 'Volcano', 'Prairie'], 0, ['ice', 'mountain']),
+    q('猜節慶', 'Guess the festival', ['端午節', '春節', '中秋節', '重陽節'], ['Dragon Boat', 'Lunar New Year', 'Mid-Autumn', 'Double Ninth'], 0, ['zongzi', 'boat']),
   ],
   logic: [
     q('小明比小華高，小華比小美高。誰最矮？', 'Al is taller than Bo, Bo is taller than Cy. Who is shortest?', ['小美', '小華', '小明', '無法判斷'], ['Cy', 'Bo', 'Al', 'Cannot tell'], 0),
@@ -84,15 +85,26 @@ const BUILTIN = {
   ],
 };
 const BUILTIN_WORDS = [['CAT', '貓', 'A pet that purrs'], ['MOON', '月亮', 'It orbits Earth'], ['APPLE', '蘋果', 'A crunchy fruit'], ['RIVER', '河流', 'Flowing water'], ['TIGER', '老虎', 'A striped big cat'], ['BREAD', '麵包', 'Baked at breakfast']];
-const BUILTIN_PAIRS = [['🐶', '🐱'], ['⭐', '🌙'], ['🍎', '🍌'], ['🚗', '🚲'], ['☀️', '☁️'], ['🐟', '🐢']];
-const BUILTIN_EMOJI = ['🍕', '🐼', '🚀', '🎸', '🌵', '🦊', '🍩', '⚽', '🌈', '🐙', '🎈', '🍉'];
+const PICTURE_PAIRS = [['dog', 'cat'], ['star', 'moon'], ['apple', 'pear'], ['car', 'bike'], ['sun', 'cloud'], ['fish', 'turtle']];
+const MEMORY_SET = [
+  { icon: 'pizza', zh: '披薩', en: 'Pizza' }, { icon: 'panda', zh: '貓熊', en: 'Panda' }, { icon: 'rocket', zh: '火箭', en: 'Rocket' },
+  { icon: 'guitar', zh: '吉他', en: 'Guitar' }, { icon: 'cactus', zh: '仙人掌', en: 'Cactus' }, { icon: 'fox', zh: '狐狸', en: 'Fox' },
+  { icon: 'donut', zh: '甜甜圈', en: 'Donut' }, { icon: 'ball', zh: '足球', en: 'Football' }, { icon: 'rainbow', zh: '彩虹', en: 'Rainbow' },
+  { icon: 'balloon', zh: '氣球', en: 'Balloon' }, { icon: 'watermelon', zh: '西瓜', en: 'Watermelon' }, { icon: 'star', zh: '星星', en: 'Star' },
+];
 
 const MCQ_SCHEMA = { type: 'object', properties: { questions: { type: 'array', minItems: 3, maxItems: 12, items: { type: 'object', properties: {
   prompt: { type: 'string' }, options: { type: 'array', items: { type: 'string' }, minItems: 2, maxItems: 4 }, answer: { type: 'integer', minimum: 0, maximum: 3 },
 }, required: ['prompt', 'options', 'answer'] } } }, required: ['questions'] };
 
+const PICTURE_NAMES = Object.keys(PICTURES);
+const REBUS_SCHEMA = { type: 'object', properties: { questions: { type: 'array', minItems: 3, maxItems: 12, items: { type: 'object', properties: {
+  ...MCQ_SCHEMA.properties.questions.items.properties,
+  icons: { type: 'array', minItems: 2, maxItems: 3, items: { type: 'string', enum: PICTURE_NAMES } },
+}, required: ['prompt', 'options', 'answer', 'icons'] } } }, required: ['questions'] };
+
 const STYLE = {
-  rebus: '用 2 到 4 個 emoji 暗示一個常見事物，提問並給 4 個選項',
+  rebus: '從 icons 可用的圖示挑 2 到 3 個，組合起來暗示一個常見事物。prompt 只寫要猜的類別（例如「猜節慶」），不可描述圖示內容；答案要靠圖示組合才猜得到，不可直接是其中一個圖示，給 4 個選項',
   logic: '三句話以內的邏輯推理或數列題，答案必須能嚴格推導，給 4 個選項',
   quiz: '十秒內能回答的有趣常識題，給 4 個選項',
   truefalse: '令人意外但確實為真或為假的冷知識敘述，options 固定為對與錯（英文為 True 與 False）',
@@ -102,22 +114,25 @@ const STYLE = {
 };
 
 const norm = s => String(s || '').trim();
+const hasEmoji = s => /\p{Extended_Pictographic}/u.test(s);
 const validMCQ = x => {
   const options = (x.options || []).map(norm);
+  if (hasEmoji(norm(x.prompt)) || options.some(hasEmoji)) return false;
   return norm(x.prompt) && options.length >= 2 && options.every(Boolean) && new Set(options).size === options.length
     && Number.isInteger(x.answer) && x.answer >= 0 && x.answer < options.length;
 };
 const shuffleOptions = x => {
   const correct = x.options[x.answer];
   const options = shuffle(x.options);
-  return { prompt: x.prompt, options, answer: options.indexOf(correct) };
+  return { prompt: x.prompt, icons: x.icons, options, answer: options.indexOf(correct) };
 };
 
 async function seen(id) { try { return JSON.parse(await AsyncStorage.getItem(`seen:${id}`)) || []; } catch { return []; } }
 async function remember(id, items) { try { await AsyncStorage.setItem(`seen:${id}`, JSON.stringify([...items, ...(await seen(id))].slice(0, 40))); } catch {} }
 
 const langName = lang => (lang === 'zh' ? '繁體中文（台灣用語）' : 'English');
-const SYSTEM = '你是手機休閒遊戲的出題者。題目要新鮮有趣、事實正確、適合所有年齡、十秒內能讀完，不要重複已列出的題目。';
+const SYSTEM = '你是手機休閒遊戲的出題者。題目要新鮮有趣、事實正確、適合所有年齡、十秒內能讀完，不要重複已列出的題目。任何文字都不可使用 emoji。';
+const questionKey = x => [x.prompt, ...(x.icons || [])].join(' ');
 
 // Returns { items, source }. Any failure falls back to the built-in bank so play never stalls.
 export async function loadQuiz(game, lang, count = 8) {
@@ -125,11 +140,12 @@ export async function loadQuiz(game, lang, count = 8) {
   if (hasGemini()) {
     try {
       const { questions } = await generateJSON({
-        system: SYSTEM, schema: MCQ_SCHEMA,
+        system: SYSTEM, schema: game.ai === 'rebus' ? REBUS_SCHEMA : MCQ_SCHEMA,
         input: `語言：${langName(lang)}。題型：${STYLE[game.ai]}。出 ${count} 題。answer 是正確選項在 options 的索引。避開：${JSON.stringify(avoid.slice(0, 20))}`,
       });
-      const items = questions.filter(validMCQ).map(x => ({ ...x, prompt: norm(x.prompt), options: x.options.map(norm) })).filter(x => !avoid.includes(x.prompt));
-      if (items.length >= 3) { remember(game.id, items.map(i => i.prompt)); return { items: items.map(shuffleOptions), source: 'gemini' }; }
+      const items = questions.filter(validMCQ).filter(x => game.ai !== 'rebus' || (x.icons?.length >= 2 && x.icons.every(n => PICTURES[n])))
+        .map(x => ({ ...x, prompt: norm(x.prompt), options: x.options.map(norm) })).filter(x => !avoid.includes(questionKey(x)));
+      if (items.length >= 3) { remember(game.id, items.map(questionKey)); return { items: items.map(shuffleOptions), source: 'gemini' }; }
     } catch (e) { console.warn('Gemini quiz fallback:', e.message); }
   }
   return { items: shuffle(BUILTIN[game.ai]).map(x => shuffleOptions(x[lang])), source: 'builtin' };
@@ -151,33 +167,6 @@ export async function loadWords(lang, count = 3) {
   return { items: shuffle(BUILTIN_WORDS).slice(0, count).map(([word, z, e]) => ({ word, hint: lang === 'zh' ? z : e })), source: 'builtin' };
 }
 
-const EMOJI_RE = /^[^\x00-\x7F]{1,8}$/;
-export async function loadPairs(count = 3) {
-  if (hasGemini()) {
-    try {
-      const { pairs } = await generateJSON({
-        system: SYSTEM,
-        schema: { type: 'object', properties: { pairs: { type: 'array', minItems: 3, maxItems: 6, items: { type: 'object', properties: { base: { type: 'string' }, odd: { type: 'string' } }, required: ['base', 'odd'] } } }, required: ['pairs'] },
-        input: `給 ${count + 1} 組外形相近但形狀可分辨的 emoji（不可只靠顏色區分），base 與 odd 各一個 emoji。`,
-      });
-      const items = pairs.map(p => [norm(p.base), norm(p.odd)]).filter(([a, b]) => a !== b && EMOJI_RE.test(a) && EMOJI_RE.test(b));
-      if (items.length >= count) return { items: items.slice(0, count), source: 'gemini' };
-    } catch (e) { console.warn('Gemini pairs fallback:', e.message); }
-  }
-  return { items: shuffle(BUILTIN_PAIRS).slice(0, count), source: 'builtin' };
-}
-
-export async function loadEmoji(count = 6) {
-  if (hasGemini()) {
-    try {
-      const { emoji } = await generateJSON({
-        system: SYSTEM,
-        schema: { type: 'object', properties: { emoji: { type: 'array', minItems: 6, maxItems: 10, items: { type: 'string' } } }, required: ['emoji'] },
-        input: `隨機挑一個主題，給 ${count + 2} 個屬於該主題、彼此外形明顯不同的 emoji。`,
-      });
-      const items = [...new Set(emoji.map(norm))].filter(e => EMOJI_RE.test(e));
-      if (items.length >= count) return { items: items.slice(0, count), source: 'gemini' };
-    } catch (e) { console.warn('Gemini emoji fallback:', e.message); }
-  }
-  return { items: shuffle(BUILTIN_EMOJI).slice(0, count), source: 'builtin' };
-}
+// Pictures are drawn in-app, so these two games pick from local sets and need no network.
+export const loadPairs = async (count = 3) => ({ items: shuffle(PICTURE_PAIRS).slice(0, count) });
+export const loadMemorySet = async (count = 6) => ({ items: shuffle(MEMORY_SET).slice(0, count) });

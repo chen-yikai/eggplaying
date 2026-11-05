@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { AccessibilityInfo, Animated, Platform, Pressable, ScrollView, Text, TextInput, View } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { Icon } from './icons';
 import { type, useColors } from '../theme/tokens';
 
 const NATIVE = Platform.OS !== 'web';
@@ -36,29 +36,37 @@ export function T({ v = 'body', color, style, children, ...rest }) {
   return <Text style={[type[v], { color: color || c.label }, style]} {...rest}>{children}</Text>;
 }
 
-// The signature element: a game tile with real thickness. It sinks on touch-down
-// and stays latched halfway when selected, so selection is never colour alone.
-export function Tile({ onPress, selected, edge, depth = 5, radius = 18, style, faceStyle, disabled, label, children }) {
+// A flat card that gives way under the finger. Selection adds a heavier outline, so it is never colour alone.
+export function Tile({ onPress, selected, radius = 16, style, faceStyle, disabled, label, children }) {
   const c = useColors();
   const reduced = useReducedMotion();
-  const latch = depth * 0.5;
-  const y = useRef(new Animated.Value(selected ? latch : 0)).current;
-  useEffect(() => { spring(y, selected ? latch : 0, { response: 0.25, reduced }); }, [selected]);
+  const s = useRef(new Animated.Value(1)).current;
   return (
     <Pressable
       accessibilityRole="button" accessibilityLabel={label}
       accessibilityState={{ selected: !!selected, disabled: !!disabled }}
       disabled={disabled} delayPressIn={0} onPress={onPress}
-      onPressIn={() => spring(y, depth * 0.85, { response: 0.14, reduced })}
-      onPressOut={() => spring(y, selected ? latch : 0, { response: 0.3, reduced })}
-      style={[{ borderRadius: radius, backgroundColor: edge || c.edge, paddingBottom: depth }, style]}
+      onPressIn={() => spring(s, 0.96, { response: 0.14, reduced })}
+      onPressOut={() => spring(s, 1, { response: 0.3, reduced })}
+      style={style}
     >
       <Animated.View style={[{
         flex: 1, borderRadius: radius, backgroundColor: selected ? c.accentTint : c.surface,
-        borderWidth: selected ? 2 : 0, borderColor: c.accent, opacity: disabled ? 0.5 : 1,
-        alignItems: 'center', justifyContent: 'center', transform: [{ translateY: y }],
+        borderWidth: selected ? 2 : 1, borderColor: selected ? c.accent : c.edge, opacity: disabled ? 0.5 : 1,
+        alignItems: 'center', justifyContent: 'center', transform: [{ scale: s }],
       }, faceStyle]}>{children}</Animated.View>
     </Pressable>
+  );
+}
+
+// An icon on a soft rounded square: the one way a game, room or category is pictured.
+export function Badge({ icon, tone = 'puzzle', size = 44 }) {
+  const c = useColors();
+  const [bg, fg] = { puzzle: [c.puzzleTint, c.puzzle], challenge: [c.challengeTint, c.challenge], neutral: [c.surface2, c.secondary] }[tone];
+  return (
+    <View style={{ width: size, height: size, borderRadius: Math.round(size * 0.3), backgroundColor: bg, alignItems: 'center', justifyContent: 'center' }}>
+      <Icon name={icon} size={Math.round(size * 0.56)} color={fg} />
+    </View>
   );
 }
 
@@ -75,23 +83,23 @@ export function Button({ title, onPress, kind = 'primary', icon, disabled, style
       onPressOut={() => spring(s, 1, { response: 0.3, reduced })} style={style}
     >
       <Animated.View style={{
-        minHeight: 50, borderRadius: 14, paddingHorizontal: 16, paddingVertical: 12, flexDirection: 'row', gap: 8,
+        minHeight: 52, borderRadius: 16, paddingHorizontal: 16, paddingVertical: 12, flexDirection: 'row', gap: 8,
         alignItems: 'center', justifyContent: 'center', backgroundColor: primary ? c.accent : c.accentTint,
         opacity: disabled ? 0.45 : 1, transform: [{ scale: s }],
       }}>
-        {icon && <Ionicons name={icon} size={20} color={fg} />}
+        {icon && <Icon name={icon} size={20} color={fg} strokeWidth={2} />}
         <T v="headline" color={fg} style={{ textAlign: 'center' }}>{title}</T>
       </Animated.View>
     </Pressable>
   );
 }
 
-export function IconButton({ icon, label, onPress, color }) {
+export function IconButton({ icon, label, onPress, color, filled }) {
   const c = useColors();
   return (
     <Pressable accessibilityRole="button" accessibilityLabel={label} onPress={onPress} hitSlop={6}
       style={({ pressed }) => ({ minWidth: 44, minHeight: 44, alignItems: 'center', justifyContent: 'center', opacity: pressed ? 0.5 : 1 })}>
-      <Ionicons name={icon} size={24} color={color || c.accent} />
+      <Icon name={icon} size={24} color={color || c.accent} filled={filled} />
     </Pressable>
   );
 }
@@ -106,7 +114,7 @@ export function NavBar({ title, backLabel, onBack, right }) {
           {onBack && (
             <Pressable accessibilityRole="button" accessibilityLabel={backLabel} onPress={onBack} hitSlop={6}
               style={({ pressed }) => ({ flexDirection: 'row', alignItems: 'center', minHeight: 44, paddingRight: 8, opacity: pressed ? 0.5 : 1 })}>
-              <Ionicons name="chevron-back" size={26} color={c.accent} />
+              <Icon name="chevronLeft" size={24} color={c.accent} strokeWidth={2} />
               <T v="body" color={c.accent} numberOfLines={1}>{backLabel}</T>
             </Pressable>
           )}
@@ -137,16 +145,16 @@ export function Banner({ tone = 'info', text }) {
   const a = useRef(new Animated.Value(0)).current;
   useEffect(() => { a.setValue(0); spring(a, 1, { response: 0.32, ratio: tone === 'success' ? 0.75 : 1, reduced }); }, [text]);
   const map = {
-    success: [c.successTint, c.success, 'checkmark-circle'],
-    error: [c.dangerTint, c.danger, 'alert-circle'],
-    info: [c.accentTint, c.accent, 'information-circle'],
+    success: [c.successTint, c.success, 'checkCircle'],
+    error: [c.dangerTint, c.danger, 'alertCircle'],
+    info: [c.accentTint, c.accent, 'infoCircle'],
   }[tone];
   return (
     <Animated.View accessibilityLiveRegion="polite" style={{
-      flexDirection: 'row', gap: 8, alignItems: 'center', backgroundColor: map[0], borderRadius: 12, padding: 12, marginTop: 14,
+      flexDirection: 'row', gap: 8, alignItems: 'center', backgroundColor: map[0], borderRadius: 14, padding: 12, marginTop: 14,
       opacity: a, transform: [{ scale: a.interpolate({ inputRange: [0, 1], outputRange: [0.96, 1] }) }],
     }}>
-      <Ionicons name={map[2]} size={20} color={map[1]} />
+      <Icon name={map[2]} size={20} color={map[1]} strokeWidth={2} />
       <T v="subhead" color={map[1]} style={{ flex: 1, fontWeight: '600' }}>{text}</T>
     </Animated.View>
   );
@@ -176,7 +184,7 @@ export function Segmented({ items, value, onChange }) {
 
 export function Group({ children, style }) {
   const c = useColors();
-  return <View style={[{ backgroundColor: c.surface, borderRadius: 16, overflow: 'hidden' }, style]}>{children}</View>;
+  return <View style={[{ backgroundColor: c.surface, borderRadius: 18, borderWidth: 1, borderColor: c.edge, overflow: 'hidden' }, style]}>{children}</View>;
 }
 
 // `accessory` sits beside the row's button, never inside it, so it stays its own control.
@@ -185,14 +193,14 @@ export function Row({ leading, title, subtitle, trailing, accessory, onPress, la
   return (
     <View style={{ flexDirection: 'row', alignItems: 'center', paddingRight: accessory ? 4 : 0, borderBottomWidth: last ? 0 : 1, borderBottomColor: c.separator }}>
       <Pressable accessibilityRole={onPress ? 'button' : undefined} accessibilityLabel={label} onPress={onPress} disabled={!onPress}
-        style={({ pressed }) => ({ flex: 1, flexDirection: 'row', alignItems: 'center', gap: 12, minHeight: 56, paddingLeft: 16, paddingRight: accessory ? 4 : 16, paddingVertical: 10, backgroundColor: pressed ? c.surface2 : 'transparent' })}>
+        style={({ pressed }) => ({ flex: 1, flexDirection: 'row', alignItems: 'center', gap: 12, minHeight: 64, paddingLeft: 14, paddingRight: accessory ? 4 : 16, paddingVertical: 10, backgroundColor: pressed ? c.surface2 : 'transparent' })}>
         {leading}
         <View style={{ flex: 1 }}>
-          <T v="body">{title}</T>
+          <T v="body" style={{ fontWeight: '500' }}>{title}</T>
           {!!subtitle && <T v="footnote" color={c.secondary}>{subtitle}</T>}
         </View>
         {trailing}
-        {onPress && !accessory && <Ionicons name="chevron-forward" size={18} color={c.placeholder} />}
+        {onPress && !accessory && <Icon name="chevronRight" size={18} color={c.placeholder} />}
       </Pressable>
       {accessory}
     </View>
@@ -201,7 +209,7 @@ export function Row({ leading, title, subtitle, trailing, accessory, onPress, la
 
 export const Field = React.forwardRef(function Field({ style, ...props }, ref) {
   const c = useColors();
-  return <TextInput ref={ref} placeholderTextColor={c.placeholder} style={[type.body, { color: c.label, minHeight: 48, paddingVertical: 10 }, style]} {...props} />;
+  return <TextInput ref={ref} placeholderTextColor={c.placeholder} style={[type.body, { color: c.label, minHeight: 48, paddingVertical: 10 }, !NATIVE && { outlineColor: c.accent }, style]} {...props} />;
 });
 
 export function Section({ title, children, style }) {
@@ -225,14 +233,14 @@ export function Page({ children, bottom = 32, scrollRef, ...rest }) {
 export function Chip({ text, tone = 'neutral' }) {
   const c = useColors();
   const [bg, fg] = tone === 'accent' ? [c.accentTint, c.accent] : [c.surface2, c.secondary];
-  return <View style={{ backgroundColor: bg, borderRadius: 8, paddingHorizontal: 8, paddingVertical: 3 }}><T v="caption" color={fg}>{text}</T></View>;
+  return <View style={{ backgroundColor: bg, borderRadius: 999, paddingHorizontal: 9, paddingVertical: 3 }}><T v="caption" color={fg}>{text}</T></View>;
 }
 
-export function EmptyState({ emoji, title, body, children }) {
+export function EmptyState({ icon, title, body, children }) {
   const c = useColors();
   return (
     <View style={{ alignItems: 'center', paddingVertical: 40, paddingHorizontal: 12 }}>
-      <Text style={{ fontSize: 52 }}>{emoji}</Text>
+      <Badge icon={icon} tone="neutral" size={72} />
       <T v="title2" style={{ marginTop: 14, textAlign: 'center' }}>{title}</T>
       {!!body && <T v="subhead" color={c.secondary} style={{ marginTop: 6, textAlign: 'center' }}>{body}</T>}
       {children && <View style={{ marginTop: 18, alignSelf: 'stretch' }}>{children}</View>}

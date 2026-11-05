@@ -26,7 +26,7 @@ function Piece({ n, x, y, cell, onPress }) {
   useEffect(() => { spring(ax, x, { reduced }); spring(ay, y, { reduced }); }, [x, y]);
   return (
     <Animated.View style={{ position: 'absolute', width: cell, height: cell, transform: [{ translateX: ax }, { translateY: ay }] }}>
-      <Tile depth={4} radius={14} label={`${n}`} style={{ flex: 1 }} onPress={onPress}>
+      <Tile radius={14} label={`${n}`} style={{ flex: 1 }} onPress={onPress}>
         <T style={{ fontSize: 28, lineHeight: 34, fontWeight: '700' }}>{n}</T>
       </Tile>
     </Animated.View>

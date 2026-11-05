@@ -9,7 +9,8 @@ src/
   screens/               One file per page
   games/views/           The game screens, one file per game type
   games/catalog.js       20-game catalog, built-in questions, Gemini question loaders
-  components/            ui.js (UI kit and springs), Mascot, GameRow, PickerSheet
+  components/            ui.js (UI kit and springs), icons.js (all SVG icons), Logo, Mascot, GameRow, PickerSheet
+  assets/                logo.js (the app icon as a data URI, so Snack's git import still works)
   data/                  Chat room topics
   state/                 store.js (session, saves, play history, language)
   theme/                 tokens.js (colours and type)

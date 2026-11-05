@@ -1,6 +1,7 @@
 import React from 'react';
 import { View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import Logo from '../components/Logo';
 import { Banner, Button, Group, Page, Row, Section, Segmented, T } from '../components/ui';
 import { GAMES } from '../games/catalog';
 import { useStore } from '../state/store';
@@ -14,8 +15,13 @@ export default function ProfileScreen() {
   return (
     <View style={{ flex: 1, paddingTop: insets.top }}>
       <Page>
-        <T v="largeTitle" accessibilityRole="header" style={{ marginTop: 8 }}>{user ? user.name : tr('訪客', 'Guest')}</T>
-        <T v="subhead" color={c.secondary} style={{ marginTop: 2 }}>{user ? user.email : tr('紀錄只存在這台裝置', 'Your progress stays on this device')}</T>
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 14, marginTop: 10 }}>
+          <Logo size={56} />
+          <View style={{ flex: 1 }}>
+            <T v="title" accessibilityRole="header" numberOfLines={1}>{user ? user.name : tr('訪客', 'Guest')}</T>
+            <T v="footnote" color={c.secondary} numberOfLines={1} style={{ marginTop: 1 }}>{user ? user.email : tr('紀錄只存在這台裝置', 'Your progress stays on this device')}</T>
+          </View>
+        </View>
         {user && dbError && <Banner tone="error" text={tr(`資料庫連線問題：${dbError}`, `Database problem: ${dbError}`)} />}
         <Section title={tr('紀錄', 'Progress')}>
           <Group>
@@ -26,7 +32,7 @@ export default function ProfileScreen() {
         <Section title={tr('語言', 'Language')}>
           <Segmented value={lang} onChange={setLang} items={[{ id: 'zh', label: '繁體中文' }, { id: 'en', label: 'English' }]} />
         </Section>
-        <Button style={{ marginTop: 28 }} kind="secondary" icon={user ? 'log-out-outline' : 'log-in-outline'} title={user ? tr('登出', 'Log Out') : tr('登入／註冊', 'Log In / Sign Up')} onPress={() => (user ? signOut() : setAuthOpen(true))} />
+        <Button style={{ marginTop: 28 }} kind="secondary" icon={user ? 'logOut' : 'logIn'} title={user ? tr('登出', 'Log Out') : tr('登入／註冊', 'Log In / Sign Up')} onPress={() => (user ? signOut() : setAuthOpen(true))} />
       </Page>
     </View>
   );

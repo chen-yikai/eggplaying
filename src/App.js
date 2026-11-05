@@ -1,8 +1,9 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { BackHandler, Pressable, View } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
 import { StatusBar } from 'expo-status-bar';
 import { SafeAreaProvider, useSafeAreaInsets } from 'react-native-safe-area-context';
+import { Icon } from './components/icons';
+import Logo from './components/Logo';
 import { ScreenEnter, T } from './components/ui';
 import AuthScreen from './screens/AuthScreen';
 import ChatRoomScreen, { ChatListScreen } from './screens/ChatScreen';
@@ -15,9 +16,9 @@ import { StoreProvider, useStore } from './state/store';
 import { useColors } from './theme/tokens';
 
 const TABS = [
-  { id: 'home', icon: 'game-controller', zh: '首頁', en: 'Home' },
+  { id: 'home', icon: 'gamepad', zh: '首頁', en: 'Home' },
   { id: 'favorites', icon: 'heart', zh: '收藏', en: 'Saved' },
-  { id: 'chat', icon: 'chatbubbles', zh: '聊天室', en: 'Chat' },
+  { id: 'chat', icon: 'chat', zh: '聊天室', en: 'Chat' },
   { id: 'me', icon: 'person', zh: '我的', en: 'Me' },
 ];
 
@@ -26,15 +27,17 @@ function TabBar({ tab, onChange }) {
   const { tr } = useStore();
   const insets = useSafeAreaInsets();
   return (
-    <View accessibilityRole="tablist" style={{ flexDirection: 'row', backgroundColor: c.surface, borderTopWidth: 1, borderTopColor: c.separator, paddingBottom: insets.bottom }}>
+    <View accessibilityRole="tablist" style={{ flexDirection: 'row', gap: 4, paddingHorizontal: 8, paddingTop: 6, backgroundColor: c.surface, borderTopWidth: 1, borderTopColor: c.separator, paddingBottom: Math.max(insets.bottom, 6) }}>
       {TABS.map(item => {
         const on = item.id === tab;
         const color = on ? c.accent : c.secondary;
         return (
           <Pressable key={item.id} accessibilityRole="tab" accessibilityState={{ selected: on }} onPress={() => onChange(item.id)}
-            style={{ flex: 1, minHeight: 52, alignItems: 'center', justifyContent: 'center', paddingVertical: 6 }}>
-            <Ionicons name={on ? item.icon : `${item.icon}-outline`} size={24} color={color} />
-            <T v="caption" color={color} style={{ fontWeight: on ? '700' : '500' }}>{tr(item.zh, item.en)}</T>
+            style={{ flex: 1, minHeight: 58 }}>
+            <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', gap: 2, paddingVertical: 6, borderRadius: 16, backgroundColor: on ? c.accentTint : 'transparent' }}>
+              <Icon name={item.icon} size={22} color={color} filled={on} />
+              <T v="caption" color={color} style={{ fontWeight: on ? '600' : '500' }}>{tr(item.zh, item.en)}</T>
+            </View>
           </Pressable>
         );
       })}
@@ -69,7 +72,7 @@ function Root() {
     return () => sub?.remove?.();
   }, [stack.length, tab, store.authOpen]);
 
-  if (!store.ready) return <View style={{ flex: 1, backgroundColor: c.bg }} />;
+  if (!store.ready) return <View style={{ flex: 1, backgroundColor: c.bg, alignItems: 'center', justifyContent: 'center' }}><Logo size={88} /></View>;
   if (needsAuth) return <AuthScreen />;
 
   const top = stack[stack.length - 1];

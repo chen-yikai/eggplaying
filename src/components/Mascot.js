@@ -1,24 +1,18 @@
 import React, { useEffect, useRef } from 'react';
 import { Animated, View } from 'react-native';
+import Logo from './Logo';
 import { spring, useReducedMotion } from './ui';
 import { useColors } from '../theme/tokens';
 
-// Original mascot: a game tile with a face. Its paws rise to cover its eyes while you type a password.
+const SIZE = 112;
+
+// The app icon comes to life: its hands rise to cover its eyes while you type a password.
 export default function Mascot({ covering }) {
   const c = useColors();
   const reduced = useReducedMotion();
   const y = useRef(new Animated.Value(0)).current;
   useEffect(() => { spring(y, covering ? 1 : 0, { response: 0.3, ratio: 0.85, reduced }); }, [covering]);
-  const lift = y.interpolate({ inputRange: [0, 1], outputRange: [0, -74] });
-  const Eye = () => <View style={{ width: 14, height: 14, borderRadius: 7, backgroundColor: '#1B1D26' }} />;
-  const Paw = () => <Animated.View style={{ width: 34, height: 40, borderRadius: 14, backgroundColor: c.challenge, transform: [{ translateY: lift }] }} />;
-  return (
-    <View accessibilityElementsHidden importantForAccessibility="no-hide-descendants" style={{ alignSelf: 'center', backgroundColor: c.edge, borderRadius: 30, paddingBottom: 7 }}>
-      <View style={{ width: 116, height: 104, borderRadius: 30, backgroundColor: c.puzzle, overflow: 'hidden', alignItems: 'center' }}>
-        <View style={{ flexDirection: 'row', gap: 28, marginTop: 32 }}><Eye /><Eye /></View>
-        <View style={{ width: 22, height: 10, marginTop: 8, borderBottomLeftRadius: 11, borderBottomRightRadius: 11, backgroundColor: '#1B1D26' }} />
-        <View style={{ position: 'absolute', bottom: -38, flexDirection: 'row', gap: 12 }}><Paw /><Paw /></View>
-      </View>
-    </View>
-  );
+  const lift = y.interpolate({ inputRange: [0, 1], outputRange: [SIZE * 0.72, 0] });
+  const hand = left => <Animated.View style={{ position: 'absolute', left, top: SIZE * 0.3, width: 30, height: SIZE, borderRadius: 15, backgroundColor: c.paw, borderWidth: 1, borderColor: 'rgba(92,70,36,0.28)', transform: [{ translateY: lift }] }} />;
+  return <View style={{ alignSelf: 'center' }}><Logo size={SIZE}>{hand(SIZE * 0.17)}{hand(SIZE * 0.51)}</Logo></View>;
 }

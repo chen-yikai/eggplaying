@@ -2,26 +2,26 @@ import { useColorScheme } from 'react-native';
 
 // Contrast (WCAG) checked per pair: every text colour is at least 4.5:1 on its surface.
 const light = {
-  bg: '#F2F3F7', surface: '#FFFFFF', surface2: '#E9EBF2', edge: '#D5D9E5', separator: '#DDE0E9',
-  label: '#1B1D26', secondary: '#5A5F6E', placeholder: '#6E7382',
-  accent: '#3F5FC0', onAccent: '#FFFFFF', accentTint: '#E7ECFB',
-  success: '#1E7B45', successTint: '#E2F4E9', danger: '#B3362B', dangerTint: '#FBE9E7',
-  puzzle: '#7C93E0', challenge: '#EDAE49', scrim: 'rgba(10,12,20,0.45)',
+  bg: '#F7F6F0', surface: '#FFFFFF', surface2: '#EEEDE3', edge: '#E3E1D5', separator: '#ECEAE0',
+  label: '#23241C', secondary: '#5F6156', placeholder: '#6F7166',
+  accent: '#555C2C', onAccent: '#FFFFFF', accentTint: '#E9EBD5',
+  success: '#2A7044', successTint: '#E3F1E6', danger: '#B03A2A', dangerTint: '#F9E8E4',
+  puzzle: '#555C2C', puzzleTint: '#E9EBD5', challenge: '#94570F', challengeTint: '#F6E8D2', paw: '#EAD8BA', scrim: 'rgba(25,26,15,0.42)',
 };
 const dark = {
-  bg: '#101218', surface: '#1C1F28', surface2: '#2A2E3A', edge: '#0A0B10', separator: '#2F3340',
-  label: '#F2F3F7', secondary: '#A8ADBC', placeholder: '#8D93A3',
-  accent: '#8FA8F5', onAccent: '#101218', accentTint: '#252E4D',
-  success: '#5FCF8E', successTint: '#163324', danger: '#FF8A7E', dangerTint: '#3D1C19',
-  puzzle: '#4E66BC', challenge: '#B57F22', scrim: 'rgba(0,0,0,0.6)',
+  bg: '#13140E', surface: '#1D1E17', surface2: '#2A2B21', edge: '#32332A', separator: '#2B2C23',
+  label: '#F4F3EA', secondary: '#B3B4A5', placeholder: '#95978B',
+  accent: '#C4CD80', onAccent: '#1D1F0E', accentTint: '#2F331A',
+  success: '#7DD098', successTint: '#183223', danger: '#FF9382', dangerTint: '#3B1E19',
+  puzzle: '#C4CD80', puzzleTint: '#2F331A', challenge: '#E9B56C', challengeTint: '#392B16', paw: '#EAD8BA', scrim: 'rgba(0,0,0,0.6)',
 };
 
 export const useColors = () => (useColorScheme() === 'dark' ? dark : light);
 
 export const type = {
-  largeTitle: { fontSize: 34, lineHeight: 41, fontWeight: '700', letterSpacing: -0.5 },
-  title: { fontSize: 28, lineHeight: 34, fontWeight: '700', letterSpacing: -0.3 },
-  title2: { fontSize: 22, lineHeight: 28, fontWeight: '700' },
+  largeTitle: { fontSize: 32, lineHeight: 39, fontWeight: '700', letterSpacing: -0.6 },
+  title: { fontSize: 26, lineHeight: 32, fontWeight: '700', letterSpacing: -0.4 },
+  title2: { fontSize: 20, lineHeight: 26, fontWeight: '700', letterSpacing: -0.2 },
   headline: { fontSize: 17, lineHeight: 24, fontWeight: '600' },
   body: { fontSize: 17, lineHeight: 25 },
   subhead: { fontSize: 15, lineHeight: 21 },

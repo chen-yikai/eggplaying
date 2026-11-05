@@ -21,7 +21,7 @@ export default function FindDifferent({ tr, data, onFinish }) {
   return (
     <View>
       <T v="subhead" color={c.secondary} style={{ marginBottom: 14 }}>{tr(`第 ${round + 1} / ${data.items.length} 關：點出不一樣的那個`, `Round ${round + 1} of ${data.items.length}: tap the odd one`)}</T>
-      <Grid n={4} size={size} render={i => <Cell emoji={i === odd ? other : base} label={tr(`第 ${i + 1} 格`, `Cell ${i + 1}`)} onPress={() => tap(i)} />} />
+      <Grid n={4} size={size} render={i => <Cell icon={i === odd ? other : base} label={tr(`第 ${i + 1} 格`, `Cell ${i + 1}`)} onPress={() => tap(i)} />} />
       {wrong && <Banner tone="error" text={tr('不是這個，再找找。', 'Not that one. Keep looking.')} />}
     </View>
   );

@@ -20,7 +20,7 @@ export default function Memory({ tr, data, onFinish }) {
     if (open.length !== 1) { setOpen([i]); return; }
     const pair = [open[0], i];
     setOpen(pair); setMoves(moves + 1);
-    if (cards[pair[0]] === cards[pair[1]]) {
+    if (cards[pair[0]].icon === cards[pair[1]].icon) {
       const nd = [...done, ...pair];
       setDone(nd); setOpen([]);
       if (nd.length === cards.length) onFinish({ won: true, title: tr('全部配對成功！', 'All matched!'), detail: tr(`翻了 ${moves + 1} 次。`, `${moves + 1} turns.`) });
@@ -33,7 +33,7 @@ export default function Memory({ tr, data, onFinish }) {
       <T v="subhead" color={c.secondary} style={{ marginBottom: 14 }}>{tr(`翻牌找出所有配對。已翻 ${moves} 次`, `Find every pair. ${moves} turns`)}</T>
       <Grid n={4} count={cards.length} size={size} render={i => {
         const up = open.includes(i) || done.includes(i);
-        return <Cell emoji={up ? cards[i] : undefined} text={up ? undefined : '?'} muted={!up} disabled={done.includes(i)} label={up ? cards[i] : tr(`第 ${i + 1} 張牌`, `Card ${i + 1}`)} onPress={() => tap(i)} />;
+        return <Cell icon={up ? cards[i].icon : undefined} text={up ? undefined : '?'} muted={!up} disabled={done.includes(i)} label={up ? tr(cards[i].zh, cards[i].en) : tr(`第 ${i + 1} 張牌`, `Card ${i + 1}`)} onPress={() => tap(i)} />;
       }} />
     </View>
   );

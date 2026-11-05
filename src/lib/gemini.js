@@ -14,7 +14,8 @@ export async function generateJSON({ system, input, schema, timeoutMs = 12000 })
     const res = await fetch(ENDPOINT, {
       method: 'POST',
       signal: ctrl.signal,
-      headers: { 'Content-Type': 'application/json', 'x-goog-api-key': API_KEY, 'Api-Revision': '2026-05-20' },
+      // No Api-Revision header: Google's CORS rules reject it, which blocks every call on web.
+      headers: { 'Content-Type': 'application/json', 'x-goog-api-key': API_KEY },
       body: JSON.stringify({
         model: MODEL, input, system_instruction: system,
         response_format: { type: 'text', mime_type: 'application/json', schema },

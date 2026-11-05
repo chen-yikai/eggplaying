@@ -1,8 +1,8 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Animated, Dimensions, Modal, Platform, Pressable, Text, View } from 'react-native';
+import { Animated, Dimensions, Modal, Platform, Pressable, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { formatSecs } from './GameRow';
-import { Button, spring, T, useReducedMotion } from './ui';
+import { Badge, Button, spring, T, useReducedMotion } from './ui';
 import { GAMES, shuffle } from '../games/catalog';
 import { useStore } from '../state/store';
 import { useColors } from '../theme/tokens';
@@ -49,7 +49,7 @@ export default function PickerSheet({ onClose, onPlay }) {
       <View style={{ flex: 1 }} pointerEvents="box-none" />
       <Animated.View accessibilityViewIsModal style={{ backgroundColor: c.surface, borderTopLeftRadius: 24, borderTopRightRadius: 24, padding: 24, paddingBottom: 24 + insets.bottom, width: '100%', maxWidth: 640, alignSelf: 'center', transform: [{ translateY: reduced ? 0 : y }] }}>
         <T v="subhead" color={c.secondary} style={{ textAlign: 'center' }}>{tr('今天就玩這款', 'Today you are playing')}</T>
-        <Text style={{ fontSize: 64, textAlign: 'center', marginTop: 10 }}>{shown.emoji}</Text>
+        <View style={{ alignItems: 'center', marginTop: 14, marginBottom: 6 }}><Badge icon={shown.icon} tone={shown.type} size={80} /></View>
         <T v="title" accessibilityLiveRegion="polite" style={{ textAlign: 'center', marginTop: 6 }}>{name}</T>
         <T v="subhead" color={c.secondary} style={{ textAlign: 'center', marginTop: 4, minHeight: 21 }}>
           {landed ? `${tr(shown.dz, shown.de)} · ${formatSecs(shown.secs, tr)}${played[shown.id] ? '' : tr(' · 沒玩過', ' · New')}` : ' '}
