@@ -29,7 +29,7 @@ cp .env.example .env     # set POSTGRES_PASSWORD and JWT_SECRET (openssl rand -h
 docker compose up -d --build
 ```
 
-The site is then on port `WEB_PORT` (8080 by default). Only the web container publishes a port. The database keeps its data in the `db-data` volume, and the API applies `backend/migrations/` when it starts.
+No container publishes a port, so the stack is only reachable inside its Compose network. To serve it, connect a reverse proxy or tunnel to the `web` container on port 80, on the same Docker network. The proxy must forward WebSocket upgrades for `/api/ws` and set `X-Forwarded-For`, because rate limits use it to tell visitors apart. The database keeps its data in the `db-data` volume, and the API applies `backend/migrations/` when it starts.
 
 To point a phone or a local preview at a deployment, set `EXPO_PUBLIC_API_URL` to its address and restart Expo. There is no TLS in this stack, so put an HTTPS proxy in front of it before using it publicly.
 

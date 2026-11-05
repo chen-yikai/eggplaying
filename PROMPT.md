@@ -59,7 +59,7 @@
 
 ## 後端與部署
 
-- `docker-compose.yml` 一次部署網站、API 與資料庫，只有 web 容器對外開 port，資料庫密碼不會進 App。
+- `docker-compose.yml` 一次部署網站、API 與資料庫，所有容器都不對外開 port，需由反向代理或 tunnel 連到 web 容器的 80 port，資料庫密碼不會進 App。
 - API 在 `backend/`，schema 在 `backend/migrations/`，API 啟動時自動套用；App 只透過 `src/lib/api.js` 存取。
 - 手機與本機預覽用 `EXPO_PUBLIC_API_URL` 指向部署位址。
 

@@ -1,7 +1,8 @@
 # One command deploys the website, the API and the database:
 #   cp .env.example .env   (then fill it in)
 #   docker compose up -d --build
-# Only the web container publishes a port. It serves the site and passes /api to the API.
+# No container publishes a port, so nothing is reachable from the host or the internet by default.
+# The web container listens on port 80 inside the Compose network, serves the site and passes /api to the API.
 services:
   web:
     build:
@@ -11,8 +12,6 @@ services:
     depends_on:
       api:
         condition: service_healthy
-    ports:
-      - "${WEB_PORT:-8080}:80"
 
   api:
     build: ./backend
