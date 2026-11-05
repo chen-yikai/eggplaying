@@ -9,7 +9,7 @@ const Ctx = createContext(null);
 export const useStore = () => useContext(Ctx);
 
 export function StoreProvider({ children }) {
-  const [state, setState] = useState({ lang: 'zh', favorites: [], played: {}, skippedAuth: false });
+  const [state, setState] = useState({ lang: 'zh', favorites: [], played: {}, skippedAuth: false, installDismissed: false });
   const [ready, setReady] = useState(false);
   const [session, setSession] = useState(null);
   const [authOpen, setAuthOpen] = useState(false);
@@ -85,6 +85,7 @@ export function StoreProvider({ children }) {
   const value = useMemo(() => ({
     ...state, ready, user, dbError, zh: state.lang === 'zh', tr: (z, e) => (state.lang === 'zh' ? z : e),
     setLang: lang => setState(s => ({ ...s, lang })), skipAuth: () => setState(s => ({ ...s, skippedAuth: true })),
+    dismissInstall: () => setState(s => ({ ...s, installDismissed: true })),
     toggleFavorite, markPlayed, pickFresh, signIn, signUp, signOut: endSession, authOpen, setAuthOpen,
   }), [state, ready, session, dbError, toggleFavorite, markPlayed, pickFresh, endSession, authOpen]);
 

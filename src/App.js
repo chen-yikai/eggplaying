@@ -1,10 +1,10 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { BackHandler, Pressable, View } from 'react-native';
+import { Animated, BackHandler, Pressable, View } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { SafeAreaProvider, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Icon } from './components/icons';
 import Logo from './components/Logo';
-import { ScreenEnter, T } from './components/ui';
+import { ScreenEnter, spring, T, useReducedMotion } from './components/ui';
 import AuthScreen from './screens/AuthScreen';
 import ChatRoomScreen, { ChatListScreen } from './screens/ChatScreen';
 import FavoritesScreen from './screens/FavoritesScreen';
@@ -21,26 +21,43 @@ const TABS = [
   { id: 'chat', icon: 'chat', zh: '聊天室', en: 'Chat' },
   { id: 'me', icon: 'person', zh: '我的', en: 'Me' },
 ];
+const TAB_GAP = 4;
 
 function TabBar({ tab, onChange }) {
   const c = useColors();
   const { tr } = useStore();
   const insets = useSafeAreaInsets();
+  const reduced = useReducedMotion();
+  const [width, setWidth] = useState(0);
+  const x = useRef(new Animated.Value(0)).current;
+  const placedWidth = useRef(0);
+  const slot = (width - TAB_GAP * (TABS.length - 1)) / TABS.length;
+  const index = TABS.findIndex(t => t.id === tab);
+
+  // The highlight slides to the chosen tab, but jumps into place on first layout and after a resize.
+  useEffect(() => {
+    if (!width) return;
+    const target = index * (slot + TAB_GAP);
+    if (placedWidth.current !== width) { placedWidth.current = width; x.setValue(target); return; }
+    spring(x, target, { response: 0.36, ratio: 0.82, reduced });
+  }, [index, width]);
+
   return (
-    <View accessibilityRole="tablist" style={{ flexDirection: 'row', gap: 4, paddingHorizontal: 8, paddingTop: 6, backgroundColor: c.surface, borderTopWidth: 1, borderTopColor: c.separator, paddingBottom: Math.max(insets.bottom, 6) }}>
-      {TABS.map(item => {
-        const on = item.id === tab;
-        const color = on ? c.accent : c.secondary;
-        return (
-          <Pressable key={item.id} accessibilityRole="tab" accessibilityState={{ selected: on }} onPress={() => onChange(item.id)}
-            style={{ flex: 1, minHeight: 58 }}>
-            <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', gap: 2, paddingVertical: 6, borderRadius: 16, backgroundColor: on ? c.accentTint : 'transparent' }}>
+    <View style={{ paddingHorizontal: 8, paddingTop: 6, backgroundColor: c.surface, borderTopWidth: 1, borderTopColor: c.separator, paddingBottom: Math.max(insets.bottom, 6) }}>
+      <View accessibilityRole="tablist" onLayout={e => setWidth(e.nativeEvent.layout.width)} style={{ flexDirection: 'row', gap: TAB_GAP }}>
+        {width > 0 && <Animated.View pointerEvents="none" style={{ position: 'absolute', top: 0, bottom: 0, left: 0, width: slot, borderRadius: 16, backgroundColor: c.accentTint, transform: [{ translateX: x }] }} />}
+        {TABS.map(item => {
+          const on = item.id === tab;
+          const color = on ? c.accent : c.secondary;
+          return (
+            <Pressable key={item.id} accessibilityRole="tab" accessibilityState={{ selected: on }} aria-selected={on} onPress={() => onChange(item.id)}
+              style={{ flex: 1, minHeight: 58, alignItems: 'center', justifyContent: 'center', gap: 2, paddingVertical: 6 }}>
               <Icon name={item.icon} size={22} color={color} filled={on} />
               <T v="caption" color={color} style={{ fontWeight: on ? '600' : '500' }}>{tr(item.zh, item.en)}</T>
-            </View>
-          </Pressable>
-        );
-      })}
+            </Pressable>
+          );
+        })}
+      </View>
     </View>
   );
 }

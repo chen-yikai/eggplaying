@@ -1,6 +1,7 @@
 import React from 'react';
 import { View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import InstallCard from '../components/InstallCard';
 import Logo from '../components/Logo';
 import { Banner, Button, Group, Page, Row, Section, Segmented, T } from '../components/ui';
 import { GAMES } from '../games/catalog';
@@ -29,6 +30,7 @@ export default function ProfileScreen() {
             <Row last title={tr('收藏', 'Saved')} trailing={<T v="headline">{favorites.length}</T>} />
           </Group>
         </Section>
+        <InstallCard style={{ marginTop: 26 }} />
         <Section title={tr('語言', 'Language')}>
           <Segmented value={lang} onChange={setLang} items={[{ id: 'zh', label: '繁體中文' }, { id: 'en', label: 'English' }]} />
         </Section>

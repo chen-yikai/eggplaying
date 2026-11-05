@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Pressable, ScrollView, useWindowDimensions, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Icon } from '../components/icons';
+import InstallCard from '../components/InstallCard';
 import Logo from '../components/Logo';
 import PickerSheet from '../components/PickerSheet';
 import { Badge, Button, Group, Page, Row, Section, T, Tile } from '../components/ui';
@@ -50,6 +51,8 @@ export default function HomeScreen({ nav }) {
           <TypeTile type="challenge" icon="trophy" title={tr('挑戰遊戲', 'Challenge')} blurb={tr('10 款 · 拚手速', '10 games · race')} />
         </View>
         <Button style={{ marginTop: 12 }} icon="dice" title={tr('不知道玩什麼？幫我選！', "Can't decide? Pick for Me!")} onPress={() => setPicking(true)} />
+
+        <InstallCard dismissible style={{ marginTop: 14 }} />
 
         <Section title={tr('我的收藏', 'Saved')}>
           {saved.length ? (

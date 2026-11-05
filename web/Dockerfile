@@ -5,6 +5,7 @@ COPY package.json package-lock.json ./
 RUN npm ci
 COPY app.json index.js ./
 COPY assets ./assets
+COPY public ./public
 COPY src ./src
 RUN npx expo export --platform web --output-dir dist
 

@@ -17,6 +17,7 @@ src/
   lib/                   API client
   legacy/                Earlier screens nothing imports; kept for reference
 backend/                 Express API, chat WebSocket, Gemini questions and SQL migrations
+public/                  Web page template, install manifest and icons (Add to Device)
 web/                     Web image: nginx serves the site and passes /api to the API
 docker-compose.yml       Website, API and database as one deployment
 .env.example             Copy to .env
