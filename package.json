@@ -5,10 +5,7 @@
     "start": "expo start",
     "android": "expo start --android",
     "ios": "expo start --ios",
-    "web": "expo start --web",
-    "db:generate": "drizzle-kit generate",
-    "db:migrate": "drizzle-kit migrate",
-    "db:studio": "drizzle-kit studio"
+    "web": "expo start --web"
   },
   "dependencies": {
     "@expo/metro-runtime": "~55.0.12",
@@ -26,11 +23,5 @@
     "react-native-url-polyfill": "2.0.0",
     "react-native-web": "^0.21.0"
   },
-  "private": true,
-  "devDependencies": {
-    "dotenv": "18.0.9",
-    "drizzle-kit": "0.31.11",
-    "drizzle-orm": "0.45.4",
-    "postgres": "4.0.0"
-  }
+  "private": true
 }
