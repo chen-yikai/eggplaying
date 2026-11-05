@@ -56,6 +56,9 @@ export const geminiConfigured = () => !!process.env.GEMINI_API_KEY;
 // A cap across all visitors: the per-address limit alone would not protect the quota from many addresses.
 let day = '';
 let used = 0;
+
+// Kept in memory for the dashboard, so these counts start over when the API restarts.
+const stats = { succeeded: 0, failed: 0, lastSuccessAt: null, lastError: null };
 export function underDailyLimit() {
   const today = new Date().toISOString().slice(0, 10);
   if (today !== day) { day = today; used = 0; }
@@ -65,6 +68,19 @@ export function underDailyLimit() {
 }
 
 async function generate(input, schema) {
+  try {
+    const result = await requestGemini(input, schema);
+    stats.succeeded += 1;
+    stats.lastSuccessAt = new Date().toISOString();
+    return result;
+  } catch (e) {
+    stats.failed += 1;
+    stats.lastError = { message: e.name === 'TimeoutError' ? 'gemini-timeout' : e.message, at: new Date().toISOString() };
+    throw e;
+  }
+}
+
+async function requestGemini(input, schema) {
   const res = await fetch(ENDPOINT, {
     method: 'POST',
     signal: AbortSignal.timeout(TIMEOUT_MS),
@@ -76,6 +92,27 @@ async function generate(input, schema) {
   const text = data.steps?.filter(s => s.type === 'model_output').flatMap(s => s.content || []).filter(p => p.type === 'text').map(p => p.text).join('');
   if (!text) throw new Error('gemini-empty');
   return JSON.parse(text);
+}
+
+export function geminiStatus() {
+  const today = new Date().toISOString().slice(0, 10);
+  const lastOk = stats.lastSuccessAt || '';
+  const lastBad = stats.lastError?.at || '';
+  let state = 'unknown';
+  if (!geminiConfigured()) state = 'not_configured';
+  else if (lastOk || lastBad) state = lastOk >= lastBad ? 'working' : 'failing';
+  return { state, model: MODEL, usedToday: today === day ? used : 0, dailyLimit: DAILY_LIMIT, ...stats };
+}
+
+export async function checkGemini() {
+  const started = Date.now();
+  if (!geminiConfigured()) return { ok: false, ms: 0, error: 'No GEMINI_API_KEY set' };
+  try {
+    await generate('回傳 ok 為 true。', { type: 'object', properties: { ok: { type: 'boolean' } }, required: ['ok'] });
+    return { ok: true, ms: Date.now() - started };
+  } catch {
+    return { ok: false, ms: Date.now() - started, error: stats.lastError.message };
+  }
 }
 
 function cleanQuestion(x, kind) {

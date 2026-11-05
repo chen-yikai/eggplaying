@@ -26,11 +26,28 @@ export const DUMMY_HASH = await hashPassword(randomBytes(16).toString('hex'));
 
 export const signToken = userId => jwt.sign({}, secret, { subject: userId, expiresIn: TOKEN_LIFETIME, algorithm: 'HS256' });
 
+const ADMIN_AUDIENCE = 'dashboard';
+export const signAdminToken = () => jwt.sign({}, secret, { subject: 'admin', audience: ADMIN_AUDIENCE, expiresIn: '8h', algorithm: 'HS256' });
+
+export function requireAdmin(req, res, next) {
+  const [scheme, token] = (req.headers.authorization || '').split(' ');
+  try {
+    if (scheme !== 'Bearer' || !token) throw new Error('missing token');
+    jwt.verify(token, secret, { algorithms: ['HS256'], audience: ADMIN_AUDIENCE });
+    next();
+  } catch {
+    res.status(401).json({ error: { code: 'unauthorized', message: 'Log in again.' } });
+  }
+}
+
 export function requireUser(req, res, next) {
   const [scheme, token] = (req.headers.authorization || '').split(' ');
   try {
     if (scheme !== 'Bearer' || !token) throw new Error('missing token');
-    req.userId = jwt.verify(token, secret, { algorithms: ['HS256'] }).sub;
+    const payload = jwt.verify(token, secret, { algorithms: ['HS256'] });
+    // A dashboard token is not a player account.
+    if (payload.aud) throw new Error('wrong audience');
+    req.userId = payload.sub;
     next();
   } catch {
     res.status(401).json({ error: { code: 'unauthorized', message: 'Log in again.' } });

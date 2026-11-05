@@ -34,4 +34,6 @@ No container publishes a port, so the stack is only reachable inside its Compose
 
 To point a phone or a local preview at a deployment, set `EXPO_PUBLIC_API_URL` to its address and restart Expo. There is no TLS in this stack, so put an HTTPS proxy in front of it before using it publicly.
 
+Set `DASHBOARD_PASSWORD` to turn on `/dashboard`, which shows Gemini status and all users. It is off when the password is empty or under 12 characters.
+
 To change the schema, add a new numbered file to `backend/migrations/`. Each file runs once.

@@ -22,6 +22,7 @@ services:
     environment:
       JWT_SECRET: ${JWT_SECRET:?Set JWT_SECRET in .env}
       GEMINI_API_KEY: ${GEMINI_API_KEY:-}
+      DASHBOARD_PASSWORD: ${DASHBOARD_PASSWORD:-}
       PGHOST: db
       PGPORT: 5432
       PGUSER: postgres

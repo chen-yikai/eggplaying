@@ -1,5 +1,6 @@
 import express from 'express';
 import rateLimit from 'express-rate-limit';
+import { admin } from './admin.js';
 import { DUMMY_HASH, hashPassword, requireUser, signToken, verifyPassword } from './auth.js';
 import { broadcast, validRoom } from './chat.js';
 import { sql } from './db.js';
@@ -144,6 +145,8 @@ api.post('/questions/:kind', limiter(60 * 1000, 20), async (req, res) => {
     return unavailable();
   }
 });
+
+api.use('/admin', admin);
 
 api.use((req, res) => fail(res, 404, 'not_found', 'Not found.'));
 
