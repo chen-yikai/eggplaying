@@ -40,7 +40,10 @@ export async function api(path, { method = 'GET', body, timeoutMs } = {}) {
   return data;
 }
 
+// One room, or every room when none is given. Returns null if no server address is configured.
 export function chatSocket(room) {
+  if (!BASE && Platform.OS !== 'web') return null;
   const origin = BASE || window.location.origin;
-  return new WebSocket(`${origin.replace(/^http/, 'ws')}/api/ws?room=${encodeURIComponent(room)}`);
+  const query = room ? `?room=${encodeURIComponent(room)}` : '';
+  return new WebSocket(`${origin.replace(/^http/, 'ws')}/api/ws${query}`);
 }

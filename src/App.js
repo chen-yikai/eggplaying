@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { Animated, BackHandler, Pressable, View } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { SafeAreaProvider, useSafeAreaInsets } from 'react-native-safe-area-context';
+import ChatToast from './components/ChatToast';
 import { Icon } from './components/icons';
 import Logo from './components/Logo';
 import { ScreenEnter, spring, T, useReducedMotion } from './components/ui';
@@ -106,6 +107,7 @@ function Root() {
     <View style={{ flex: 1, backgroundColor: c.bg, overflow: 'hidden' }}>
       <ScreenEnter key={top ? top.key : `tab-${tab}`} dir={dir.current}>{content}</ScreenEnter>
       {!top && <TabBar tab={tab} onChange={nav.tab} />}
+      <ChatToast activeRoom={top?.name === 'room' ? top.params.room : null} muted={top?.name === 'game'} onOpen={room => nav.push('room', { room })} />
     </View>
   );
 }

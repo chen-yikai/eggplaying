@@ -53,6 +53,7 @@ export default function ChatRoomScreen({ room: roomId, nav }) {
     // A reconnect reloads history, so anything sent while the socket was down still appears.
     const connect = reload => {
       socket = chatSocket(roomId);
+      if (!socket) return;
       socket.onopen = () => { if (reload) load(); };
       socket.onmessage = e => add(JSON.parse(e.data));
       socket.onclose = () => { if (alive) retry = setTimeout(() => connect(true), 3000); };

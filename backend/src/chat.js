@@ -3,6 +3,8 @@ import { WebSocketServer } from 'ws';
 export const validRoom = room => /^[a-z0-9_-]{1,40}$/.test(room || '');
 
 const rooms = new Map();
+// Sockets opened without a room hear every room, for the in-app message popup.
+const ALL = '*';
 const HEARTBEAT_MS = 30000;
 
 // Live delivery only. Chat history is always read over HTTP, so a dropped socket loses nothing.
@@ -11,8 +13,9 @@ export function attachChat(server) {
 
   server.on('upgrade', (req, socket, head) => {
     const url = new URL(req.url, 'http://localhost');
-    const room = url.searchParams.get('room');
-    if (url.pathname !== '/api/ws' || !validRoom(room)) {
+    const all = !url.searchParams.has('room');
+    const room = all ? ALL : url.searchParams.get('room');
+    if (url.pathname !== '/api/ws' || (!all && !validRoom(room))) {
       socket.write('HTTP/1.1 400 Bad Request\r\nConnection: close\r\n\r\n');
       socket.destroy();
       return;
@@ -43,6 +46,6 @@ export function attachChat(server) {
 }
 
 export function broadcast(room, message) {
-  const data = JSON.stringify(message);
-  rooms.get(room)?.forEach(ws => { if (ws.readyState === ws.OPEN) ws.send(data); });
+  const data = JSON.stringify({ ...message, room });
+  [rooms.get(room), rooms.get(ALL)].forEach(set => set?.forEach(ws => { if (ws.readyState === ws.OPEN) ws.send(data); }));
 }
