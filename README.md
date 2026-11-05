@@ -1,4 +1,4 @@
-# Let's Play
+# 玩擲
 
 Expo (SDK 55) demo app. `npm start`, then press `w` for web or `a` for Android.
 

@@ -33,7 +33,7 @@ export default function HomeScreen({ nav }) {
   return (
     <View style={{ flex: 1, paddingTop: insets.top }}>
       <Page>
-        <T v="largeTitle" accessibilityRole="header" style={{ marginTop: 8 }}>Let's Play!</T>
+        <T v="largeTitle" accessibilityRole="header" style={{ marginTop: 8 }}>玩擲</T>
         <T v="subhead" color={c.secondary} style={{ marginTop: 2, marginBottom: 18 }}>
           {fresh ? tr(`還有 ${fresh} 款沒玩過，每局不用三分鐘`, `${fresh} games still new, each under three minutes`) : tr('全部玩過了！題目每次都不一樣', 'You played them all! Questions change every time')}
         </T>

@@ -1,4 +1,4 @@
-# Let's Play：接續開發提示
+# 玩擲：接續開發提示
 
 請把這個 Expo demo 專案，從目前的舊 UI 做成下面描述的新版本。開始前先讀完本文件和 `README.md`。
 
@@ -71,11 +71,11 @@
 
 - 模型：`gemini-3.5-flash-lite`。
 - 端點：`POST https://generativelanguage.googleapis.com/v1beta/interactions`
-- 標頭：`x-goog-api-key`、`Api-Revision: 2026-05-20`
+- 標頭：`x-goog-api-key`。不可加 `Api-Revision`，CORS 預檢會回 403，web 上的呼叫會全部失敗。
 - JSON 輸出：`response_format: { type: 'text', mime_type: 'application/json', schema }`
 - 回應文字位置：`steps[]` 中 `type` 為 `model_output` 的項目 → `content[]` → `text`
 
-**尚未驗證**：目前沒有金鑰，以上都還沒實際呼叫過，web 上的 CORS 也沒確認。拿到金鑰後要先測這一段。
+**已驗證**（2026-11-05）：金鑰有效，JSON 輸出與回應解析正確，Chrome 上 CORS 可通過。遊戲畫面內的完整流程尚未測試。
 
 ## 工作步驟
 
